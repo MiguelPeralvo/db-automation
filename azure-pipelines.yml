@@ -5,6 +5,7 @@ variables:
 trigger:
 - staging
 - master
+- dev
 
 pool:
   name: Hosted Ubuntu 1604
@@ -34,8 +35,16 @@ steps:
   persistCredentials: true
   clean: true
 
-- script: git checkout master
-  displayName: 'Get Latest Branch'
+- script: git checkout $(Build.SourceBranchName)
+  displayName: 'Get Latest from Branch $(Build.SourceBranchName)'
+
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'filePath'
+    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+    arguments: '--shard $(DATABRICKS_HOST) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train_model.py --workspacepath /Users/miguel.peralvo@databricks.com/demos/automation/run/ --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
+  displayName: 'Train the new version of the model'
+
 
 - script: |
     cat /home/vsts/.databrickscfg
@@ -43,16 +52,16 @@ steps:
     echo "-------------"
     dbfs ls dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model --profile AZDO
     dbfs rm --recursive dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model --profile AZDO
-    dbfs cp --overwrite  $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model/deploy_azure_ml_model.py --profile AZDO
+    dbfs cp --overwrite  $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model/deploy_azure_ml_model_2.py --profile AZDO
     dbfs ls dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model --profile AZDO
-    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
+    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Deploy Notebook'
 
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(DATABRICKS_HOST) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
+    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
   displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
   
 - script: |

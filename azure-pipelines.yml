@@ -24,9 +24,9 @@ steps:
     token: '$(PERSONAL-ACCESS-TOKEN)'
   displayName: 'Configure Databricks CLI for AZDO'
 
-- script: |
-    dbfs ls
-  displayName: 'Check config working'
+#- script: |
+#    dbfs ls
+#  displayName: 'Check config working'
 
 - checkout: self
   persistCredentials: true
@@ -36,7 +36,6 @@ steps:
   displayName: 'Get Latest Branch'
 
 - script: |
-    dbfs ls
     databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o
   displayName: 'Import ML Deploy Notebook'
 - task: PythonScript@0

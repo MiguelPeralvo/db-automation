@@ -12,8 +12,15 @@ steps:
   inputs:
     versionSpec: 3.7
 
+- checkout: self
+  persistCredentials: true
+  clean: true
+
+- script: git checkout master
+  displayName: 'Get Latest Branch'
+
 - script: |
-    pip install pytest requests setuptools wheel
+    pip install pytest requests setuptools wheel pyspark==2.4.5
     pip install -U databricks-cli
     dbfs ls
   displayName: 'Load Python Dependencies'

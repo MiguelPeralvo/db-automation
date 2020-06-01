@@ -16,8 +16,17 @@ steps:
 - script: |
     pip install pytest requests setuptools wheel pyspark==2.4.5
     pip install -U databricks-cli
-    dbfs ls
   displayName: 'Load Python Dependencies'
+
+- task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+  inputs:
+    url: '$(WORKSPACE-REGION-URL)/?o=$(WORKSPACE-ORG-ID)'
+    token: '$(PERSONAL-ACCESS-TOKEN)'
+  displayName: 'Configure Databricks CLI for AZDO'
+
+- script: |
+    dbfs ls
+  displayName: 'Check config working'
 
 - checkout: self
   persistCredentials: true
@@ -26,8 +35,8 @@ steps:
 - script: git checkout master
   displayName: 'Get Latest Branch'
 
-
 - script: |
+    dbfs ls
     databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o
   displayName: 'Import ML Deploy Notebook'
 - task: PythonScript@0

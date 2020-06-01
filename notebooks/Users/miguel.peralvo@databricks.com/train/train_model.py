@@ -241,3 +241,16 @@ client.transition_model_version_stage(
 #   # Run pipeline in MKL Goverance Project V2 with id 6 (ML Goverance V3))
 #   runPipeline = pipeline_client.run_pipeline(run_parameters=run_parameters,project='ML Governance V2',pipeline_id=6)
 #   print('Pipeline is triggered. Please check for execution status here: https://dev.azure.com/ML-Governance/ML%20Governance%20V2/_build?definitionId=6&_a=summary')
+
+# COMMAND ----------
+
+import json
+
+output=json.dumps({
+  "model_name": model_name,
+  "version": version
+})
+
+# COMMAND ----------
+
+dbutils.notebook.exit(output)

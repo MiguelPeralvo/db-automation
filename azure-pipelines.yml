@@ -41,7 +41,7 @@ steps:
     cat /home/vsts/.databrickscfg
     echo ""
     echo "-------------"
-    dbfs ls dbfs:/Users/$(USERNAME)
+    dbfs ls dbfs:/Users/$(USERNAME) --profile AZDO
     dbfs rm --recursive dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model --profile AZDO
     dbfs cp --overwrite  $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model/deploy_azure_ml_model.py --profile AZDO
     databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO

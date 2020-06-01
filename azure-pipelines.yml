@@ -42,7 +42,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train --workspacepath /Users/miguel.peralvo@databricks.com/demos/automation/run --outfilepath /home/vsts/work/1/s/pipeline --params model_name="automation-wine-model"'
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train --workspacepath /Users/miguel.peralvo@databricks.com/demos/automation/run --outfilepath /home/vsts/work/1/s/pipeline --params model_name="automation-wine-model"'
   displayName: 'Train the new version of the model'
 
 
@@ -57,7 +57,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
   displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
   
 - script: |
@@ -70,7 +70,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),scoring_uri=$(response)'
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),scoring_uri=$(response)'
   displayName: 'Test mlFlow Model from Registry against REST API' 
 
 - task: PythonScript@0
@@ -88,5 +88,5 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),stage="production,phase="prod"'
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),stage="production,phase="prod"'
   displayName: 'Deploy mlFlow Model from Registry to Azure ML into Production'

@@ -28,8 +28,6 @@ dbutils.widgets.text(name = "model_name", defaultValue = "automation-wine-model"
 import mlflow
 mlflow.__version__
 
-# Using the hosted mlflow tracking server
-mlflow.set_experiment(experiment_name=notebook_path)
 
 # COMMAND ----------
 
@@ -170,6 +168,9 @@ import time
 model_name = dbutils.widgets.get("model_name")
 time.sleep(10)
 notebook_path = dbutils.widgets.get("notebook_path")
+
+# Using the hosted mlflow tracking server
+mlflow.set_experiment(experiment_name=notebook_path)
 
 # COMMAND ----------
 

@@ -12,7 +12,13 @@ dbutils.widgets.text(name = "model_name", defaultValue = "automation-wine-model"
 
 # COMMAND ----------
 
-model_name=dbutils.widgets.get("model_name")
+# MAGIC %scala 
+# MAGIC dbutils.widgets.text("notebook_path", dbutils.notebook.getContext().notebookPath.get)
+
+# COMMAND ----------
+
+model_name = dbutils.widgets.get("model_name")
+notebook_path = dbutils.widgets.get("notebook_path")
 
 # COMMAND ----------
 
@@ -28,6 +34,7 @@ import mlflow
 mlflow.__version__
 
 # Using the hosted mlflow tracking server
+mlflow.set_experiment(experiment_name=notebook_path)
 
 # COMMAND ----------
 

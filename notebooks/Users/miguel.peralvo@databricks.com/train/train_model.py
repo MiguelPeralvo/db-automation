@@ -17,6 +17,8 @@ dbutils.widgets.text(name = "model_name", defaultValue = "automation-wine-model"
 
 # COMMAND ----------
 
+import time
+time.sleep(10)
 model_name = dbutils.widgets.get("model_name")
 notebook_path = dbutils.widgets.get("notebook_path")
 
@@ -187,7 +189,6 @@ print(model_uri)
 
 # COMMAND ----------
 
-import time
 result = mlflow.register_model(
     model_uri,
     model_name

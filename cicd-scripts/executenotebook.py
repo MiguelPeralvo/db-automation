@@ -62,6 +62,8 @@ def main():
                 row = [fullpath, fullworkspacepath, 1]
                 notebooks.append(row)
     print('Number of Notebooks to process: '+str(len(notebooks)))
+    print(f'Notebooks to process: {notebooks}')
+
     # run each element in array
     for notebook in notebooks:
         nameonly = os.path.basename(notebook[0])
@@ -117,13 +119,13 @@ def main():
             current_state = j['state']['life_cycle_state']
             runid = j['run_id']
             if current_state in ['INTERNAL_ERROR', 'SKIPPED']:
-                sys.exit("Notebook run did not compleye. Status is "+current_state)
+                sys.exit("Notebook run did not complete. Status is "+current_state)
                 break
             else: 
                 if current_state in ['TERMINATED']:
                     result_state = j['state']['result_state']
                     if result_state in ['FAILED']:
-                        sys.exit("Notebook run did not compleye. Status is "+result_state)
+                        sys.exit("Notebook run did not complete. Status is "+result_state)
                     else:
                         break
             i=i+1

@@ -42,7 +42,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train --workspacepath /Users/miguel.peralvo@databricks.com/demos/automation/run --outfilepath /home/vsts/work/1/s/pipeline --params model_name="automation-wine-model"'
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train --workspacepath /Users/miguel.peralvo@databricks.com/demos/automation/train --outfilepath /home/vsts/work/1/s/pipeline --params model_name="automation-wine-model"'
   displayName: 'Train the new version of the model'
 
 

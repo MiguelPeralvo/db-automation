@@ -1,7 +1,8 @@
 # mlFlow Registry QA & Prod pipeline 
 
 trigger:
-- master2
+- staging
+- master
 
 pool:
   name: Hosted Ubuntu 1604
@@ -11,13 +12,6 @@ steps:
   displayName: 'Use Python 3.7'
   inputs:
     versionSpec: 3.7
-
-- checkout: self
-  persistCredentials: true
-  clean: true
-
-- script: git checkout master
-  displayName: 'Get Latest Branch'
 
 - script: |
     pip install pytest requests setuptools wheel pyspark==2.4.5

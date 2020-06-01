@@ -17,13 +17,6 @@ dbutils.widgets.text(name = "model_name", defaultValue = "automation-wine-model"
 
 # COMMAND ----------
 
-import time
-time.sleep(10)
-model_name = dbutils.widgets.get("model_name")
-notebook_path = dbutils.widgets.get("notebook_path")
-
-# COMMAND ----------
-
 # MAGIC %md ### Connect to an MLflow tracking server
 # MAGIC 
 # MAGIC MLflow can collect data about a model training session, such as validation accuracy. It can also save artifacts produced during the training session, such as a PySpark pipeline model.
@@ -173,11 +166,18 @@ def train_model(wine_data_path, model_path, alpha, l1_ratio):
 
 # COMMAND ----------
 
+import time
+model_name = dbutils.widgets.get("model_name")
+time.sleep(10)
+notebook_path = dbutils.widgets.get("notebook_path")
+
+# COMMAND ----------
+
 alpha_1 = 0.75
 l1_ratio_1 = 0.25
 model_path = 'model'
 run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
-model_uri = "runs:/"+run_id1+"/model"
+model_uri = f"runs:/{run_id1}/{model_path}"
 
 # COMMAND ----------
 

@@ -194,7 +194,7 @@ result = mlflow.register_model(
     model_uri,
     model_name
 )
-time.sleep(10)
+time.sleep(30)
 version = result.version
 
 # COMMAND ----------

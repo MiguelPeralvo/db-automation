@@ -35,16 +35,11 @@ steps:
 - script: git checkout master
   displayName: 'Get Latest Branch'
 
-- task: riserrad.azdo-databricks.azdo-databricks-deploynotebooks.deploynotebooks@0
-  displayName: 'Deploy Notebooks to Workspace'
-  inputs:
-    notebooksFolderPath: '$(Build.Repository.LocalPath)/pipeline/ML/deploy'
-    workspaceFolder: '/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model'
-
 - script: |
     cat /home/vsts/.databrickscfg
-    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o
+    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Deploy Notebook'
+
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
@@ -56,7 +51,7 @@ steps:
     echo $(response)
   displayName: 'API URL'
 - script: |
-    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Demo/Test/test_api"  --language PYTHON -o
+    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Demo/Test/test_api"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Test Notebook'
 - task: PythonScript@0
   inputs:

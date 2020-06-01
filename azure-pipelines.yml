@@ -1,4 +1,6 @@
-# mlFlow Registry QA & Prod pipeline 
+# mlFlow Registry QA & Prod pipeline
+variables:
+- group: Databricks-environment
 
 trigger:
 - staging
@@ -20,8 +22,8 @@ steps:
 
 - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
   inputs:
-    url: '$(WORKSPACE-REGION-URL)/?o=$(WORKSPACE-ORG-ID)'
-    token: '$(PERSONAL-ACCESS-TOKEN)'
+    url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
+    token: '$(DATABRICKS_TOKEN)'
   displayName: 'Configure Databricks CLI for AZDO'
 
 #- script: |
@@ -37,7 +39,12 @@ steps:
 
 - script: |
     cat /home/vsts/.databrickscfg
-    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
+    echo ""
+    echo "-------------"
+    dbfs ls dbfs:/Users/$(USERNAME)
+    dbfs rm --recursive dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model --profile AZDO
+    dbfs cp --overwrite  $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model/deploy_azure_ml_model.py --profile AZDO
+    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Deploy Notebook'
 
 - task: PythonScript@0
@@ -57,7 +64,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(DATABRICKS_HOST) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),scoring_uri=$(response)'
+    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),scoring_uri=$(response)'
   displayName: 'Test mlFlow Model from Registry against REST API' 
 
 - task: PythonScript@0
@@ -75,5 +82,5 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(DATABRICKS_HOST) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),stage="production,phase="prod"'
+    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),stage="production,phase="prod"'
   displayName: 'Deploy mlFlow Model from Registry to Azure ML into Production'

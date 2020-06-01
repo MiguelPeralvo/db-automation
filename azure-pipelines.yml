@@ -39,7 +39,7 @@ steps:
   displayName: 'Deploy Notebooks to Workspace'
   inputs:
     notebooksFolderPath: '$BUILD_SOURCESDIRECTORY/"pipeline/ML/deploy/deploy_azure_ml_model.py'
-    workspaceFolder: '/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model/deploy_azure_ml_model.py'
+    workspaceFolder: '/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model/'
 
 - script: |
     cat /home/vsts/.databrickscfg

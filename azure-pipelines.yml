@@ -42,7 +42,7 @@ steps:
     cat /home/vsts/.databrickscfg
     echo ""
     echo "-------------"
-    databricks workspace import $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train/train_model.py" "/Shared/automation/train/train_model"  --language PYTHON -o --profile AZDO
+    databricks workspace import $(Build.Repository.LocalPath)/"notebooks/Users/$(Username)/train/train_model.py" "/Shared/automation/train/train_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Train Notebook'
 
 - task: PythonScript@0

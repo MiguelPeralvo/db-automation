@@ -18,19 +18,6 @@ stage = dbutils.widgets.get("stage")
 phase=dbutils.widgets.get("phase")
 
 # COMMAND ----------
-
-# Config for AzureML Workspace
-# for secure keeping, store credentials in Azure Key Vault and link using Azure Databricks secrets with dbutils
-#subscription_id = dbutils.secrets.get(scope = "common-sp", key ="az-sub-id")
-subscription_id = "3f2e4d32-8e8d-46d6-82bc-5bb8d962328b"
-resource_group = "ok-azureml-test"                   
-workspace_name = "ok-azureml-test"                       
-tenant_id = "9f37a392-f0ae-4280-9796-f1864a10effc" # Tenant ID
-sp_id = dbutils.secrets.get(scope = "common-sp", key ="common-sa-sp-client-id") # Service Principal ID
-sp_secret = dbutils.secrets.get(scope = "common-sp", key ="common-sa-sp-client-secret") # Service Principal Secret
-
-# COMMAND ----------
-
 import mlflow
 import mlflow.azureml
 import azureml.mlflow
@@ -38,8 +25,19 @@ import azureml.core
 from azureml.core import Workspace
 from azureml.mlflow import get_portal_url
 
-print("AzureML SDK version:", azureml.core.VERSION)
-print("MLflow version:", mlflow.version.VERSION)
+# Config for AzureML Workspace
+# for secure keeping, store credentials in Azure Key Vault and link using Azure Databricks secrets with dbutils
+#subscription_id = dbutils.secrets.get(scope = "common-sp", key ="az-sub-id")
+subscription_id = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="subscription_id")   # "xxxxxxxx-8e8d-46d6-82bc-xxxxxxxxxxxx"
+resource_group = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="resource_group") # "migxx"
+workspace_name = "azure-demo-mlflow-ws"
+tenant_id = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="tenant_id")      # "xxxxxxxx-f0ae-4280-9796-xxxxxxxxxxxx"
+sp_id = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="client_id") # Service Principal ID
+sp_secret = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="client_secret") # Service Principal Secret
+
+print(f"AzureML SDK version: {azureml.core.VERSION}")
+print(f"MLflow version: {mlflow.version.VERSION}")
+
 
 # COMMAND ----------
 

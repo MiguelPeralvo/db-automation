@@ -50,7 +50,7 @@ steps:
     cat /home/vsts/.databrickscfg
     echo ""
     echo "-------------"
-    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "dbfs:/Shared/automation/deploy/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
+    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Shared/automation/deploy/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Deploy Notebook'
 
 - task: PythonScript@0

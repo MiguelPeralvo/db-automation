@@ -29,7 +29,7 @@ wine_data_path = "/tmp/mlflow-wine-quality.csv"
 
 # COMMAND ----------
 
-dbutils.widgets.text(name="model_name", defaultValue="ml-gov-demo-wine-model", label="Model Name")
+dbutils.widgets.text(name="model_name", defaultValue="automation-wine-model", label="Model Name")
 dbutils.widgets.text(name="stage", defaultValue="staging", label="Stage")
 dbutils.widgets.text(name="phase", defaultValue="qa", label="Phase")
 
@@ -58,9 +58,7 @@ from mlflow import pyfunc
 
 
 model_uri = "runs:/{}/model".format(latest_model[0].run_id)
-latest_sk_model = mlflow.sklearn.load_model(model_uri)
-udf = pyfunc.spark_udf(spark, model.source)
-
+udf = pyfunc.spark_udf(spark, model_uri)
 
 # COMMAND ----------
 
@@ -71,8 +69,8 @@ udf = pyfunc.spark_udf(spark, model.source)
 wine_data_path = "/databricks/driver/winequality-red.csv"
 
 
-data_spark = spark.sql(f"SELECT * FROM {db}.wine_quality")
-predictions = sample_test_data.select(udf(*sample_test_data.columns).alias('prediction'), "*")
+data_spark = spark.read.csv(wine_data_path, header=True)
+predictions = data_spark.select(udf(*sample_test_data.columns).alias('prediction'), "*")
 
 
 # COMMAND ----------

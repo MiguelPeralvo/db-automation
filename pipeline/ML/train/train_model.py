@@ -161,7 +161,7 @@ def train_model(wine_data_path, model_path, alpha, l1_ratio):
 
 import time
 model_name = dbutils.widgets.get("model_name")
-notebook_path = f"/Users/{username}/demos/automation/train/train_model"
+notebook_path = f"/Shared/db-automation/train/train_model"
 
 # Using the hosted mlflow tracking server
 mlflow.set_experiment(experiment_name=notebook_path)

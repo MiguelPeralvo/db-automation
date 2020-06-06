@@ -7,7 +7,7 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text(name="model_name", defaultValue="ml-gov-demo-wine-model", label="Model Name")
+dbutils.widgets.text(name="model_name", defaultValue="automation-wine-model", label="Model Name")
 dbutils.widgets.text(name="stage", defaultValue="staging", label="Stage")
 dbutils.widgets.text(name="phase", defaultValue="qa", label="Phase")
 

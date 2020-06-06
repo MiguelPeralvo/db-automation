@@ -7,15 +7,15 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text(name = "model_name", defaultValue = "ml-gov-demo-wine-model", label = "Model Name")
-dbutils.widgets.text(name = "stage", defaultValue = "staging", label = "Stage")
-dbutils.widgets.text(name = "phase", defaultValue = "qa", label = "Phase")
+dbutils.widgets.text(name="model_name", defaultValue="ml-gov-demo-wine-model", label="Model Name")
+dbutils.widgets.text(name="stage", defaultValue="staging", label="Stage")
+dbutils.widgets.text(name="phase", defaultValue="qa", label="Phase")
 
 # COMMAND ----------
 
 model_name = dbutils.widgets.get("model_name")
 stage = dbutils.widgets.get("stage")
-phase=dbutils.widgets.get("phase")
+phase = dbutils.widgets.get("phase")
 
 # COMMAND ----------
 
@@ -28,41 +28,45 @@ from azureml.mlflow import get_portal_url
 
 # Config for AzureML Workspace
 # for secure keeping, store credentials in Azure Key Vault and link using Azure Databricks secrets with dbutils
-#subscription_id = dbutils.secrets.get(scope = "common-sp", key ="az-sub-id")
-subscription_id = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="subscription_id")   # "xxxxxxxx-8e8d-46d6-82bc-xxxxxxxxxxxx"
-resource_group = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="resource_group") # "migxx"
+# subscription_id = dbutils.secrets.get(scope = "common-sp", key ="az-sub-id")
+subscription_id = dbutils.secrets.get(scope="azure-demo-mlflow",
+                                      key="subscription_id")  # "xxxxxxxx-8e8d-46d6-82bc-xxxxxxxxxxxx"
+resource_group = dbutils.secrets.get(scope="azure-demo-mlflow", key="resource_group")  # "migxx"
 workspace_name = "azure-demo-mlflow-ws"
-tenant_id = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="tenant_id")      # "xxxxxxxx-f0ae-4280-9796-xxxxxxxxxxxx"
-sp_id = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="client_id") # Service Principal ID
-sp_secret = dbutils.secrets.get(scope = "azure-demo-mlflow", key ="client_secret") # Service Principal Secret
+tenant_id = dbutils.secrets.get(scope="azure-demo-mlflow", key="tenant_id")  # "xxxxxxxx-f0ae-4280-9796-xxxxxxxxxxxx"
+sp_id = dbutils.secrets.get(scope="azure-demo-mlflow", key="client_id")  # Service Principal ID
+sp_secret = dbutils.secrets.get(scope="azure-demo-mlflow", key="client_secret")  # Service Principal Secret
 
 print(f"AzureML SDK version: {azureml.core.VERSION}")
 print(f"MLflow version: {mlflow.version.VERSION}")
 
-
 # COMMAND ----------
 
 from azureml.core.authentication import ServicePrincipalAuthentication
+
+
 def service_principal_auth():
-  return ServicePrincipalAuthentication(
-      tenant_id=tenant_id,
-      service_principal_id=sp_id,
-      service_principal_password=sp_secret)
+    return ServicePrincipalAuthentication(
+        tenant_id=tenant_id,
+        service_principal_id=sp_id,
+        service_principal_password=sp_secret)
+
 
 # COMMAND ----------
 
 def azureml_workspace(auth_type='interactive'):
-  if auth_type == 'interactive':
-    auth = interactive_auth()
-  elif auth_type == 'service_princpal':
-    auth = service_principal_auth()
-    
-  ws = Workspace.create(name = workspace_name,
-                       resource_group = resource_group,
-                       subscription_id = subscription_id,
-                       exist_ok=True,
-                       auth=auth)
-  return ws
+    if auth_type == 'interactive':
+        auth = interactive_auth()
+    elif auth_type == 'service_princpal':
+        auth = service_principal_auth()
+
+    ws = Workspace.create(name=workspace_name,
+                          resource_group=resource_group,
+                          subscription_id=subscription_id,
+                          exist_ok=True,
+                          auth=auth)
+    return ws
+
 
 # COMMAND ----------
 
@@ -74,12 +78,12 @@ import mlflow
 import mlflow.sklearn
 
 client = mlflow.tracking.MlflowClient()
-latest_model = client.get_latest_versions(name = model_name, stages=[stage])
-#print(latest_model[0])
+latest_model = client.get_latest_versions(name=model_name, stages=[stage])
+# print(latest_model[0])
 
 # COMMAND ----------
 
-model_uri="runs:/{}/model".format(latest_model[0].run_id)
+model_uri = "runs:/{}/model".format(latest_model[0].run_id)
 latest_sk_model = mlflow.sklearn.load_model(model_uri)
 
 # COMMAND ----------
@@ -95,7 +99,8 @@ latest_sk_model = mlflow.sklearn.load_model(model_uri)
 import azureml
 from azureml.core import Workspace
 
-workspace = azureml_workspace(auth_type = 'service_princpal') # If you don't have a service principal, use 'interactive' for interactive login
+workspace = azureml_workspace(
+    auth_type='service_princpal')  # If you don't have a service principal, use 'interactive' for interactive login
 
 # COMMAND ----------
 
@@ -115,14 +120,14 @@ print(phase)
 
 import mlflow.azureml
 
-model_image, azure_model = mlflow.azureml.build_image(model_uri=model_uri, 
-                                                      workspace=workspace, 
-                                                      model_name=model_name+"-"+stage,
-                                                      image_name=model_name+"-"+phase+"-image",
-                                                      description=model_name, 
+model_image, azure_model = mlflow.azureml.build_image(model_uri=model_uri,
+                                                      workspace=workspace,
+                                                      model_name=model_name + "-" + stage,
+                                                      image_name=model_name + "-" + phase + "-image",
+                                                      description=model_name,
                                                       tags={
-                                                        "alpha": str(latest_sk_model.alpha),
-                                                        "l1_ratio": str(latest_sk_model.l1_ratio),
+                                                          "alpha": str(latest_sk_model.alpha),
+                                                          "l1_ratio": str(latest_sk_model.l1_ratio),
                                                       },
                                                       synchronous=True)
 
@@ -138,14 +143,17 @@ model_image.wait_for_creation(show_output=True)
 
 import azureml
 from azureml.core.webservice import AciWebservice, Webservice
+
 2
- 
+
 3
-dev_webservice_name = model_name+"-"+phase # make sure this name is unique and doesnt already exist, else need to replace
+dev_webservice_name = model_name + "-" + phase  # make sure this name is unique and doesnt already exist, else need to replace
 4
 dev_webservice_deployment_config = AciWebservice.deploy_configuration()
 5
-dev_webservice = Webservice.deploy_from_image(name=dev_webservice_name, image=model_image, deployment_config=dev_webservice_deployment_config, workspace=workspace,overwrite=True)
+dev_webservice = Webservice.deploy_from_image(name=dev_webservice_name, image=model_image,
+                                              deployment_config=dev_webservice_deployment_config, workspace=workspace,
+                                              overwrite=True)
 
 # COMMAND ----------
 

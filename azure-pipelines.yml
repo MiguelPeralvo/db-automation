@@ -71,7 +71,7 @@ steps:
     echo $(response)
   displayName: 'API URL'
 - script: |
-    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Demo/Test/test_api"  --language PYTHON -o --profile AZDO
+    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Shared/automation/test/test_api"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Test Notebook'
 - task: PythonScript@0
   inputs:

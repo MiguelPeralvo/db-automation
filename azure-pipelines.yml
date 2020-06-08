@@ -54,7 +54,6 @@ steps:
     arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train --workspacepath /Users/miguel.peralvo@databricks.com/demos/db-automation/train --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
   displayName: 'Train the new version of the model'
 
-
 - script: |
     cat /home/vsts/.databrickscfg
     echo ""
@@ -71,31 +70,42 @@ steps:
   displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
 - script: |
-    cat /home/vsts/.databrickscfg
-    echo ""
-    echo "-------------"
-    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Shared/db-automation/deploy/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
-  displayName: 'Import ML Deploy Notebook'
-
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Shared/db-automation/deploy --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
-  displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
-  
-- script: |
     echo $(response)
-  displayName: 'API URL'
-- script: |
-    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Shared/db-automation/test/test_api"  --language PYTHON -o --profile AZDO
-  displayName: 'Import ML Test Notebook'
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Shared/db-automation/test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME),scoring_uri=$(response)'
-  displayName: 'Test mlFlow Model from Registry against REST API' 
+  displayName: 'Batch test result'
+
+#- script: |
+#    cat /home/vsts/.databrickscfg
+#    echo ""
+#    echo "-------------"
+#    databricks workspace mkdirs /Shared/db-automation/deploy --profile AZDO
+#    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Shared/db-automation/deploy/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
+#  displayName: 'Import ML Deploy Notebook'
+#
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Shared/db-automation/deploy --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+#  displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
+#
+#- script: |
+#    echo $(response)
+#  displayName: 'API URL'
+#
+#- script: |
+#    cat /home/vsts/.databrickscfg
+#    echo ""
+#    echo "-------------"
+#    databricks workspace mkdirs /Shared/db-automation/test --profile AZDO
+#    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Shared/db-automation/test/test_api"  --language PYTHON -o --profile AZDO
+#  displayName: 'Import ML Test Notebook'
+#
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Shared/db-automation/test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME),scoring_uri=$(response)'
+#  displayName: 'Test mlFlow Model from Registry against REST API'
 
 #- task: PythonScript@0
 #  inputs:

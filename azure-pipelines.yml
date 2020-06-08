@@ -73,6 +73,7 @@ steps:
     echo $(response)
   displayName: 'Batch test result'
 
+
 #- script: |
 #    cat /home/vsts/.databrickscfg
 #    echo ""

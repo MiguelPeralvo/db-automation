@@ -43,6 +43,7 @@ steps:
     cat /home/vsts/.databrickscfg
     echo ""
     echo "-------------"
+    databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
     databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Train Notebook'
 
@@ -58,6 +59,7 @@ steps:
     cat /home/vsts/.databrickscfg
     echo ""
     echo "-------------"
+    databricks workspace mkdirs /Shared/db-automation/test --profile AZDO
     databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
   displayName: 'Import ML Batch Deploy/Test Notebook'
 

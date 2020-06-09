@@ -67,7 +67,7 @@ udf = pyfunc.spark_udf(spark, model_uri)
 # COMMAND ----------
 
 data_spark = spark.read.csv(wine_data_path, header=True)
-predictions = data_spark.select(udf(*sample_test_data.columns).alias('prediction'), "*")
+predictions = data_spark.select(udf(*data_spark.columns).alias('prediction'), "*")
 
 
 # COMMAND ----------

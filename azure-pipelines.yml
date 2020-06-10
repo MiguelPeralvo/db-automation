@@ -85,8 +85,8 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Release
-  - dependsOn: Build
-  - condition: and(succeeded(), startsWith(variables['Build.SourceBranchName'], 'releases')
+  dependsOn: Build
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranchName'], 'releases')
   - jobs:
     - job: Release
       pool:

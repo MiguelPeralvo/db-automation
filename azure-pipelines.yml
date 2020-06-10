@@ -4,9 +4,12 @@ variables:
 - group: Pipeline-variables
 
 trigger:
-- staging
-- master
-- dev
+  branches:
+    include:
+      - master
+      - staging
+      - master
+      - releases/*
 
 pool:
   name: Hosted Ubuntu 1604

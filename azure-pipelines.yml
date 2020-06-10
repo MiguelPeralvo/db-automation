@@ -86,7 +86,7 @@ stages:
 
 - stage: Release
   dependsOn: Build
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranchName'], 'releases')
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranchName'], 'releases'))
   - jobs:
     - job: Release
       pool:

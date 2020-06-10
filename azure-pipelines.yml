@@ -30,6 +30,23 @@ stages:
     #    pip install -U databricks-cli
       displayName: 'Load Python Dependencies'
 
+    - script: |
+        python -m pytest --junit-xml=$(Build.Repository.LocalPath)/logs/TEST-LOCAL.xml $(Build.Repository.LocalPath)/libraries/python/dbxdemo/test*.py || true
+        ls logs
+      displayName: 'Run Python Unit Tests for library code'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '**/TEST-*.xml'
+        failTaskOnFailedTests: true
+        publishRunAttachments: true
+
+    - script: |
+        cd $(Build.Repository.LocalPath)/libraries/python/dbxdemo
+        python3 setup.py sdist bdist_wheel
+        ls dist/
+      displayName: 'Build Python Wheel for Libs'
+
     - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
       inputs:
         url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'

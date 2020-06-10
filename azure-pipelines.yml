@@ -39,8 +39,10 @@ steps:
   persistCredentials: true
   clean: true
 
-- script: git checkout $(Build.SourceBranch)
-  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / '
+- script: |
+    git pull
+#   git checkout $(Build.SourceBranch)
+  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch)'
 
 - script: |
     cat /home/vsts/.databrickscfg

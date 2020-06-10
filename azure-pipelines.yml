@@ -58,10 +58,10 @@ stages:
       displayName: 'Build Python Wheel for Libs'
 
     - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
-        inputs:
-          url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
-          token: '$(DATABRICKS_TOKEN)'
-        displayName: 'Configure Databricks CLI for AZDO'
+      inputs:
+        url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
+        token: '$(DATABRICKS_TOKEN)'
+      displayName: 'Configure Databricks CLI for AZDO'
 
       #- script: |
       #    dbfs ls

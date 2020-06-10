@@ -1,4 +1,6 @@
 # mlFlow Registry QA & Prod pipeline
+name: $[ variables['branchName'] ]
+
 variables:
 - group: Databricks-environment
 - group: Pipeline-variables
@@ -42,7 +44,7 @@ steps:
 - script: |
     git pull
 #   git checkout $(Build.SourceBranch)
-  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch)'
+  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / '
 
 - script: |
     cat /home/vsts/.databrickscfg

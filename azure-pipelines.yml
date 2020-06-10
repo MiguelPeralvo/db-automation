@@ -1,10 +1,9 @@
 # mlFlow Registry QA & Prod pipeline
-name: $[ variables['branchName'] ]
 
 variables:
 - group: Databricks-environment
 - group: Pipeline-variables
-- name: branchName
+- name: 'branchName'
   value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
 
 trigger:

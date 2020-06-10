@@ -17,7 +17,7 @@ stages:
   jobs:
   - job: Build
     pool:
-      name: Hosted Ubuntu 1604
+      vmImage: 'ubuntu-18.04'
 
     steps:
     - task: UsePythonVersion@0
@@ -30,16 +30,6 @@ stages:
     #    pip install -U databricks-cli
       displayName: 'Load Python Dependencies'
 
-    - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
-      inputs:
-        url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
-        token: '$(DATABRICKS_TOKEN)'
-      displayName: 'Configure Databricks CLI for AZDO'
-
-    #- script: |
-    #    dbfs ls
-    #  displayName: 'Check config working'
-
     - checkout: self
       persistCredentials: true
       clean: true
@@ -49,6 +39,33 @@ stages:
     #    git checkout
     ##   git checkout $(Build.SourceBranch)
     #  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
+
+    - script: |
+        python -m pytest --junit-xml=$(Build.Repository.LocalPath)/logs/TEST-LOCAL.xml $(Build.Repository.LocalPath)/libraries/python/dbxdemo/test*.py || true
+        ls logs
+      displayName: 'Run Python Unit Tests for library code'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '**/TEST-*.xml'
+        failTaskOnFailedTests: true
+        publishRunAttachments: true
+
+    - script: |
+        cd $(Build.Repository.LocalPath)/libraries/python/dbxdemo
+        python3 setup.py sdist bdist_wheel
+        ls dist/
+      displayName: 'Build Python Wheel for Libs'
+
+    - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+      inputs:
+        url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
+        token: '$(DATABRICKS_TOKEN)'
+      displayName: 'Configure Databricks CLI for AZDO'
+
+      #- script: |
+      #    dbfs ls
+      #  displayName: 'Check config working'
 
     - script: |
         cat /home/vsts/.databrickscfg
@@ -84,6 +101,23 @@ stages:
         echo $(response)
       displayName: 'Batch test result'
 
+- stage: Release
+  dependsOn: Build
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranchName'], 'releases'))
+  jobs:
+  - job: Release
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
+
+    - script: |
+        echo "Release"
+      displayName: 'Release stage'
 
 #- script: |
 #    cat /home/vsts/.databrickscfg

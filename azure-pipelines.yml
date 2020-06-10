@@ -1,5 +1,13 @@
 # mlFlow Registry QA & Prod pipeline
+name: $[ variables['branchName'] ]
+
+# Using conditions to set the variable value.
 variables:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
+    branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+    branchName: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
+
 - group: Databricks-environment
 - group: Pipeline-variables
 
@@ -39,7 +47,8 @@ steps:
   persistCredentials: true
   clean: true
 
-- script: git checkout $(Build.SourceBranchName)
+#- script: git checkout $(Build.SourceBranchName)
+- script: git checkout $(branchName)
   displayName: 'Get Latest from Branch $(Build.SourceBranchName)'
 
 - script: |

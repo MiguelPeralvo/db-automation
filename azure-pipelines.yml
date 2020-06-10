@@ -3,12 +3,6 @@
 variables:
 - group: Databricks-environment
 - group: Pipeline-variables
-${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
-  branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
-${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
-  branchName: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/pull/', '') ]
-- name: 'branchName2'
-  value: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
 
 trigger:
   branches:
@@ -46,11 +40,11 @@ steps:
   persistCredentials: true
   clean: true
 
-- script: |
-    git status
-    git checkout
-#   git checkout $(Build.SourceBranch)
-  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
+#- script: |
+#    git status
+#    git checkout
+##   git checkout $(Build.SourceBranch)
+#  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
 
 - script: |
     cat /home/vsts/.databrickscfg

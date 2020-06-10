@@ -4,6 +4,7 @@ name: $[ variables['branchName'] ]
 variables:
 - group: Databricks-environment
 - group: Pipeline-variables
+- branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
 
 trigger:
   branches:
@@ -44,7 +45,7 @@ steps:
 - script: |
     git pull
 #   git checkout $(Build.SourceBranch)
-  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / '
+  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
 
 - script: |
     cat /home/vsts/.databrickscfg

@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/db-automation/automation/_apis/build/status/MiguelPeralvo.db-automation?branchName=master)](https://dev.azure.com/db-automation/automation/_build/latest?definitionId=1&branchName=master)
+
 # Introduction 
 
 This project demonstrates the use of Azure DevOps as the tool to work with ML Pipelines in Azure Databricks.-

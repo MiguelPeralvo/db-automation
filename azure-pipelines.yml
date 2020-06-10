@@ -6,79 +6,83 @@ variables:
 
 trigger:
   branches:
-    exclude:
-      - master
     include:
+      - dev
+      - master
       - staging
       - releases/*
 
-pool:
-  name: Hosted Ubuntu 1604
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      name: Hosted Ubuntu 1604
 
-steps:
-- task: UsePythonVersion@0
-  displayName: 'Use Python 3.7'
-  inputs:
-    versionSpec: 3.7
+    steps:
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
 
-- script: |
-    pip install pytest requests setuptools wheel pyspark==2.4.5
-#    pip install -U databricks-cli
-  displayName: 'Load Python Dependencies'
+    - script: |
+        pip install pytest requests setuptools wheel pyspark==2.4.5
+    #    pip install -U databricks-cli
+      displayName: 'Load Python Dependencies'
 
-- task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
-  inputs:
-    url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
-    token: '$(DATABRICKS_TOKEN)'
-  displayName: 'Configure Databricks CLI for AZDO'
+    - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+      inputs:
+        url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
+        token: '$(DATABRICKS_TOKEN)'
+      displayName: 'Configure Databricks CLI for AZDO'
 
-#- script: |
-#    dbfs ls
-#  displayName: 'Check config working'
+    #- script: |
+    #    dbfs ls
+    #  displayName: 'Check config working'
 
-- checkout: self
-  persistCredentials: true
-  clean: true
+    - checkout: self
+      persistCredentials: true
+      clean: true
 
-#- script: |
-#    git status
-#    git checkout
-##   git checkout $(Build.SourceBranch)
-#  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
+    #- script: |
+    #    git status
+    #    git checkout
+    ##   git checkout $(Build.SourceBranch)
+    #  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
 
-- script: |
-    cat /home/vsts/.databrickscfg
-    echo ""
-    echo "-------------"
-    databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
-    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
-  displayName: 'Import ML Train Notebook'
+    - script: |
+        cat /home/vsts/.databrickscfg
+        echo ""
+        echo "-------------"
+        databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
+        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
+      displayName: 'Import ML Train Notebook'
 
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/train --workspacepath /Shared/db-automation/train --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
-  displayName: 'Train the new version of the model'
+    - task: PythonScript@0
+      inputs:
+        scriptSource: 'filePath'
+        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/train --workspacepath /Shared/db-automation/train --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+      displayName: 'Train the new version of the model'
 
-- script: |
-    cat /home/vsts/.databrickscfg
-    echo ""
-    echo "-------------"
-    databricks workspace mkdirs /Shared/db-automation/batch_test --profile AZDO
-    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
-  displayName: 'Import ML Batch Deploy/Test Notebook'
+    - script: |
+        cat /home/vsts/.databrickscfg
+        echo ""
+        echo "-------------"
+        databricks workspace mkdirs /Shared/db-automation/batch_test --profile AZDO
+        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
+      displayName: 'Import ML Batch Deploy/Test Notebook'
 
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
-  displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
+    - task: PythonScript@0
+      inputs:
+        scriptSource: 'filePath'
+        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
-- script: |
-    echo $(response)
-  displayName: 'Batch test result'
+    - script: |
+        echo $(response)
+      displayName: 'Batch test result'
 
 
 #- script: |

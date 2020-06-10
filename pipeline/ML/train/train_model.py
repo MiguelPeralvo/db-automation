@@ -3,13 +3,12 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text(name="model_name", defaultValue="ml-gov-demo-wine-model", label="Model Name")
-dbutils.widgets.text(name="trigger_pipeline", defaultValue="True", label="Trigger Pipeline")
-dbutils.widgets.text(name="trigger_pipeline", defaultValue="ml-gov-demo-wine-model", label="Model Name")
+dbutils.widgets.removeAll()
 
 # COMMAND ----------
 
-model_name=dbutils.widgets.get("model_name")
+dbutils.widgets.text(name = "model_name", defaultValue = "automation-wine-model", label = "Model Name")
+# dbutils.widgets.combobox(name = "trigger_pipeline", defaultValue = "False", choices=["True","False"],label = "Trigger Pipeline")
 
 # COMMAND ----------
 
@@ -24,7 +23,6 @@ model_name=dbutils.widgets.get("model_name")
 import mlflow
 mlflow.__version__
 
-# Using the hosted mlflow tracking server
 
 # COMMAND ----------
 
@@ -38,11 +36,51 @@ mlflow.__version__
 
 # COMMAND ----------
 
-# MAGIC %sh wget https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv
+# MAGIC %sh wget https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv --no-check-certificate
 
 # COMMAND ----------
 
-wine_data_path = "/databricks/driver/winequality-red.csv"
+import os
+import requests
+from pyspark.sql.functions import col
+
+def get_username():
+    return dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().get("user").get()
+def get_db():
+    return get_username().replace("@", "_").replace(".", "_")
+def get_home():
+    return "/Users/{}".format(get_username())
+
+def download_file(data_uri, data_path):
+    if os.path.exists(data_path):
+        print("File {} already exists".format(data_path))
+    else:
+        print("Downloading {} to {}".format(data_uri,data_path))
+        rsp = requests.get(data_uri)
+        with open(data_path, 'w') as f:
+            f.write(requests.get(data_uri).text)
+
+def download_wine_file(home, data_path):
+    download_file(data_uri, data_path)
+    final_path = f"{home}/automation/mlflow/wine-quality/wine-quality.csv"
+    print(f"Copying file to {final_path}")
+    dbutils.fs.cp(f"/tmp/mlflow-wine-quality.csv", final_path)
+    return final_path
+      
+username = get_username()
+home = get_home()
+db = get_db()
+
+# data_path = "/dbfs/tmp/mlflow-wine-quality.csv"
+temp_data_path = f"/dbfs/tmp/{username}/mlflow-wine-quality.csv"
+data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
+dbfs_wine_data_path = download_wine_file(home, temp_data_path)
+wine_data_path = f"/dbfs/{dbfs_wine_data_path}"
+
+
+# wine_df = spark.read.format("csv").option("header", "true").load(final_path).cache()
+# wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_"))  for column in wine_df.columns))
+# wine_df = wine_df.withColumn("quality", col("quality").cast("integer"))
 
 # COMMAND ----------
 
@@ -121,11 +159,20 @@ def train_model(wine_data_path, model_path, alpha, l1_ratio):
 
 # COMMAND ----------
 
+import time
+model_name = dbutils.widgets.get("model_name")
+notebook_path = f"/Shared/db-automation/train/train_model"
+
+# Using the hosted mlflow tracking server
+mlflow.set_experiment(experiment_name=notebook_path)
+
+# COMMAND ----------
+
 alpha_1 = 0.75
 l1_ratio_1 = 0.25
 model_path = 'model'
 run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
-model_uri = "runs:/"+run_id1+"/model"
+model_uri = f"runs:/{run_id1}/{model_path}"
 
 # COMMAND ----------
 
@@ -137,7 +184,6 @@ print(model_uri)
 
 # COMMAND ----------
 
-import time
 result = mlflow.register_model(
     model_uri,
     model_name
@@ -165,27 +211,42 @@ client.transition_model_version_stage(
 
 # COMMAND ----------
 
-from azure.devops.connection import Connection
-from msrest.authentication import BasicAuthentication
-from azure.devops.v6_0.pipelines.models import RunPipelineParameters,Variable
+# trigger=dbutils.widgets.get("trigger_pipeline")
+# if trigger == "True":
+#   from azure.devops.connection import Connection
+#   from msrest.authentication import BasicAuthentication
+#   from azure.devops.v6_0.pipelines.models import RunPipelineParameters,Variable
 
-# Fill in with your personal access token and org URL
-personal_access_token = dbutils.secrets.get('ml-gov', 'ado-token')
-organization_url = 'https://dev.azure.com/ML-Governance'
+#   # Fill in with your personal access token and org URL
+#   personal_access_token = dbutils.secrets.get('ml-gov','ado-token')
+#   organization_url = 'https://dev.azure.com/ML-Governance'
 
-# Create a connection to the org
-credentials = BasicAuthentication('', personal_access_token)
-connection = Connection(base_url=organization_url, creds=credentials)
+#   # Create a connection to the org
+#   credentials = BasicAuthentication('', personal_access_token)
+#   connection = Connection(base_url=organization_url, creds=credentials)
 
-# Get a client (the "core" client provides access to projects, teams, etc)
-pipeline_client=connection.clients_v6_0.get_pipelines_client()
+#   # Get a client (the "core" client provides access to projects, teams, etc)
+#   pipeline_client=connection.clients_v6_0.get_pipelines_client()
 
-#Set the variables for the pipeline
-variable=Variable(value=model_name)
-variables={'model_name':variable}
-run_parameters=RunPipelineParameters(variables=variables)
-print(run_parameters)
+#   #Set the variables for the pipeline
+#   variable=Variable(value=model_name)
+#   variables={'model_name':variable}
+#   run_parameters=RunPipelineParameters(variables=variables)
+#   print(run_parameters)
 
-# Run pipeline in MKL Goverance Project V2 with id 6 (ML Governance V3))
-runPipeline = pipeline_client.run_pipeline(run_parameters=run_parameters,project='ML Governance V2',pipeline_id=6)
-print('Pipeline is triggered. Please check for execution status here: https://dev.azure.com/ML-Governance/ML%20Governance%20V2/_build?definitionId=6&_a=summary')
+#   # Run pipeline in MKL Goverance Project V2 with id 6 (ML Goverance V3))
+#   runPipeline = pipeline_client.run_pipeline(run_parameters=run_parameters,project='ML Governance V2',pipeline_id=6)
+#   print('Pipeline is triggered. Please check for execution status here: https://dev.azure.com/ML-Governance/ML%20Governance%20V2/_build?definitionId=6&_a=summary')
+
+# COMMAND ----------
+
+import json
+
+output=json.dumps({
+  "model_name": model_name,
+  "version": version
+})
+
+# COMMAND ----------
+
+dbutils.notebook.exit(output)

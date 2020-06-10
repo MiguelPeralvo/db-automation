@@ -1,11 +1,16 @@
 # mlFlow Registry QA & Prod pipeline
+
 variables:
 - group: Databricks-environment
+- group: Pipeline-variables
 
 trigger:
-- staging
-- master
-- dev
+  branches:
+    exclude:
+      - master
+    include:
+      - staging
+      - releases/*
 
 pool:
   name: Hosted Ubuntu 1604
@@ -35,58 +40,95 @@ steps:
   persistCredentials: true
   clean: true
 
-- script: git checkout $(Build.SourceBranchName)
-  displayName: 'Get Latest from Branch $(Build.SourceBranchName)'
-
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/notebooks/Users/$(Username)/train_model.py --workspacepath /Users/miguel.peralvo@databricks.com/demos/automation/run/ --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
-  displayName: 'Train the new version of the model'
-
+#- script: |
+#    git status
+#    git checkout
+##   git checkout $(Build.SourceBranch)
+#  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
 
 - script: |
     cat /home/vsts/.databrickscfg
     echo ""
     echo "-------------"
-    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "dbfs:/Users/$(USERNAME)/Demo/Test/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
-  displayName: 'Import ML Deploy Notebook'
+    databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
+    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
+  displayName: 'Import ML Train Notebook'
 
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name)'
-  displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
-  
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/train --workspacepath /Shared/db-automation/train --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+  displayName: 'Train the new version of the model'
+
 - script: |
-    echo $(response)
-  displayName: 'API URL'
-- script: |
-    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Demo/Test/test_api"  --language PYTHON -o --profile AZDO
-  displayName: 'Import ML Test Notebook'
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),scoring_uri=$(response)'
-  displayName: 'Test mlFlow Model from Registry against REST API' 
+    cat /home/vsts/.databrickscfg
+    echo ""
+    echo "-------------"
+    databricks workspace mkdirs /Shared/db-automation/batch_test --profile AZDO
+    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
+  displayName: 'Import ML Batch Deploy/Test Notebook'
 
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/mlflow.py'
-    arguments: ''
-  displayName: 'Promote mlFlow Registry model to Production' 
+    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+  displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
 - script: |
     echo $(response)
-  displayName: 'Model Production Version'
+  displayName: 'Batch test result'
 
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-    arguments: '--shard $(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(model_name),stage="production,phase="prod"'
-  displayName: 'Deploy mlFlow Model from Registry to Azure ML into Production'
+
+#- script: |
+#    cat /home/vsts/.databrickscfg
+#    echo ""
+#    echo "-------------"
+#    databricks workspace mkdirs /Shared/db-automation/deploy --profile AZDO
+#    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Shared/db-automation/deploy/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
+#  displayName: 'Import ML Deploy Notebook'
+#
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Shared/db-automation/deploy --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+#  displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
+#
+#- script: |
+#    echo $(response)
+#  displayName: 'API URL'
+#
+#- script: |
+#    cat /home/vsts/.databrickscfg
+#    echo ""
+#    echo "-------------"
+#    databricks workspace mkdirs /Shared/db-automation/test --profile AZDO
+#    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Shared/db-automation/test/test_api"  --language PYTHON -o --profile AZDO
+#  displayName: 'Import ML Test Notebook'
+#
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Shared/db-automation/test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME),scoring_uri=$(response)'
+#  displayName: 'Test mlFlow Model from Registry against REST API'
+
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/mlflow.py'
+#    arguments: ''
+#  displayName: 'Promote mlFlow Registry model to Production'
+#
+#- script: |
+#    echo $(response)
+#  displayName: 'Model Production Version'
+#
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME),stage="production,phase="prod"'
+#  displayName: 'Deploy mlFlow Model from Registry to Azure ML into Production'

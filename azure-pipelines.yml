@@ -30,6 +30,16 @@ stages:
     #    pip install -U databricks-cli
       displayName: 'Load Python Dependencies'
 
+    - checkout: self
+      persistCredentials: true
+      clean: true
+
+    #- script: |
+    #    git status
+    #    git checkout
+    ##   git checkout $(Build.SourceBranch)
+    #  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
+
     - script: |
         python -m pytest --junit-xml=$(Build.Repository.LocalPath)/logs/TEST-LOCAL.xml $(Build.Repository.LocalPath)/libraries/python/dbxdemo/test*.py || true
         ls logs
@@ -48,24 +58,14 @@ stages:
       displayName: 'Build Python Wheel for Libs'
 
     - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
-      inputs:
-        url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
-        token: '$(DATABRICKS_TOKEN)'
-      displayName: 'Configure Databricks CLI for AZDO'
+        inputs:
+          url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
+          token: '$(DATABRICKS_TOKEN)'
+        displayName: 'Configure Databricks CLI for AZDO'
 
-    #- script: |
-    #    dbfs ls
-    #  displayName: 'Check config working'
-
-    - checkout: self
-      persistCredentials: true
-      clean: true
-
-    #- script: |
-    #    git status
-    #    git checkout
-    ##   git checkout $(Build.SourceBranch)
-    #  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
+      #- script: |
+      #    dbfs ls
+      #  displayName: 'Check config working'
 
     - script: |
         cat /home/vsts/.databrickscfg

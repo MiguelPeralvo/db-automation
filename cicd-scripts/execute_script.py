@@ -25,9 +25,7 @@ def main():
     params = args.params
 
     print('-s is ' + shard)
-    # print('-t is ' + token)
     print('-c is ' + cluster)
-    print('-l is ' + localpath)
     print('-d is ' + dbfspath)
     print('-o is ' + outfilepath)
     print('-p is ' + params)

@@ -5,7 +5,7 @@ variables:
 - group: Pipeline-variables
 
 schedules:
-- cron: "45 16 * * *"
+- cron: "55 17 * * *"
   displayName: Daily midnight build
   branches:
     include:
@@ -167,19 +167,21 @@ stages:
     displayName: Deployment of release in prod
     pool:
       vmImage: 'ubuntu-18.04'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: env | sort
+            displayName: 'Environment / Context'
 
-    steps:
-    - script: env | sort
-      displayName: 'Environment / Context'
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.7'
+            inputs:
+              versionSpec: 3.7
 
-    - task: UsePythonVersion@0
-      displayName: 'Use Python 3.7'
-      inputs:
-        versionSpec: 3.7
-
-    - script: |
-        echo "Release"
-      displayName: 'Release stage'
+          - script: |
+              echo "Release"
+            displayName: 'Release stage'
 
 #- script: |
 #    cat /home/vsts/.databrickscfg

@@ -11,9 +11,25 @@ trigger:
       - master
       - staging
       - releases/*
+  tags:
+    include:
+      - v*.*
+  paths:
+    include:
+      - libraries/*
+      - pipeline/*
+      - cicd-scripts/*
+      - azure-pipelines.yml
 
 stages:
 - stage: Build
+  condition: |
+    or
+    (
+      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+    )
   jobs:
   - job: Build
     pool:
@@ -106,14 +122,20 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Release
-  dependsOn: Build
-  condition: and(succeeded(), startsWith(variables['Build.Source'], 'refs/heads/releases'))
+  condition: |
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    )
   jobs:
   - job: Release
     pool:
       vmImage: 'ubuntu-18.04'
 
     steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
+
     - task: UsePythonVersion@0
       displayName: 'Use Python 3.7'
       inputs:

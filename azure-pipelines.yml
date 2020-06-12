@@ -5,7 +5,7 @@ variables:
 - group: Pipeline-variables
 
 schedules:
-- cron: "18 16 * * *"
+- cron: "00 17 * * *"
   displayName: Daily midnight build
   branches:
     include:
@@ -21,6 +21,7 @@ trigger:
   tags:
     include:
       - v*.*
+      - prod
 
   paths:
     include:
@@ -133,6 +134,7 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Release
+  dependsOn: []
   condition: |
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
@@ -155,6 +157,32 @@ stages:
     - script: |
         echo "Release"
       displayName: 'Release stage'
+
+- stage: production
+  displayName: Deploy release in production
+  dependsOn: []
+  condition: eq(variables['Build.SourceBranch'], 'refs/tags/production')
+  jobs:
+  - deployment: production
+    displayName: Deployment of release in production
+    pool:
+      vmImage: 'ubuntu-18.04'
+    environment: production
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: env | sort
+            displayName: 'Environment / Context'
+
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.7'
+            inputs:
+              versionSpec: 3.7
+
+          - script: |
+              echo "production"
+            displayName: 'production stage'
 
 #- script: |
 #    cat /home/vsts/.databrickscfg

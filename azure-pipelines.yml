@@ -23,14 +23,13 @@ trigger:
 
 stages:
 - stage: Build
-  condition: eq(variables['Build.Source'], 'refs/heads/dev')
-#  condition: |
-#    or
-#    (
-#      startsWith(variables['Build.Source'], 'refs/heads/dev'),
-#      startsWith(variables['Build.Source'], 'refs/heads/master'),
-#      startsWith(variables['Build.Source'], 'refs/pull')
-#    )
+  condition: |
+    or
+    (
+      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+    )
   jobs:
   - job: Build
     pool:
@@ -123,8 +122,11 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Release
-  condition: true
-#  condition: or(startsWith(variables['Build.Source'], 'refs/heads/releases'), startsWith(variables['Build.Source'], 'refs/tags/v'))
+  condition: |
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    )
   jobs:
   - job: Release
     pool:

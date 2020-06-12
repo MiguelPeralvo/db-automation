@@ -134,6 +134,7 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Release
+  dependsOn: []
   condition: |
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
@@ -159,9 +160,11 @@ stages:
 
 - stage: prod
   displayName: Deploy release in prod
+  dependsOn: []
   condition: eq(variables['Build.SourceBranch'], 'refs/tags/prod')
   jobs:
-  - job: prod
+  - deployment: prod
+    displayName: Deployment of release in prod
     pool:
       vmImage: 'ubuntu-18.04'
 

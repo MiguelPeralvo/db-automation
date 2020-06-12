@@ -40,7 +40,7 @@ def main():
         for name in files:
             fullpath = path + '/' + name
             # removes localpath to repo but keeps workspace path
-            fullworkspacepath = workspacepath + path.replace(localpath, '')
+            fullworkspacepath = workspacepath + '/' + name
 
             name, file_extension = os.path.splitext(fullpath)
             if file_extension.lower() in ['.scala', '.sql', '.r', '.py']:
@@ -53,11 +53,7 @@ def main():
     for script in scripts:
         nameonly = os.path.basename(script[0])
         workspacepath = script[1]
-
-        name, file_extension = os.path.splitext(nameonly)
-
-        # workpath removes extension
-        fullworkspacepath = workspacepath + '/' + name
+        fullworkspacepath = workspacepath + '/' + nameonly
 
         print('Running job for:' + fullworkspacepath)
 
@@ -73,7 +69,7 @@ def main():
         pyJsonString = json.loads(jsonString)
 
         values = {
-            'name': name,
+            'name': nameonly,
             'existing_cluster_id': cluster,
             'timeout_seconds': 3600,
             'spark_python_task': {'python_file': fullworkspacepath}

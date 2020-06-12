@@ -21,15 +21,7 @@ trigger:
   tags:
     include:
       - v*.*
-  pr:
-    branches:
-      include:
-        - dev
-        - master
-        - staging
-    paths:
-      exclude:
-        - README.md
+
   paths:
     include:
       - libraries/*

@@ -4,6 +4,13 @@ variables:
 - group: Databricks-environment
 - group: Pipeline-variables
 
+schedules:
+- cron: "18 16 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+      - master
+
 trigger:
   branches:
     include:
@@ -14,6 +21,7 @@ trigger:
   tags:
     include:
       - v*.*
+
   paths:
     include:
       - libraries/*
@@ -61,7 +69,7 @@ stages:
           git checkout $(Build.SourceBranchName)
         fi
 
-      displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not merging'
+      displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
 
     - script: |
         python -m pytest --junit-xml=$(Build.Repository.LocalPath)/logs/TEST-LOCAL.xml $(Build.Repository.LocalPath)/libraries/python/dbxdemo/test*.py || true

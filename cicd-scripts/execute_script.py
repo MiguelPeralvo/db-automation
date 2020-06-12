@@ -125,7 +125,7 @@ def main():
         jobjson = jobresp.text
         print("Final response:" + jobjson)
         j = json.loads(jobjson)  
-        script_output= j["script_output"]
+        script_output= j["notebook_output"]
         response=script_output["result"]
         print ("Return value is:"+response)
         print('##vso[task.setvariable variable=response;]%s' % (response))

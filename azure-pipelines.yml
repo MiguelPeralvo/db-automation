@@ -5,15 +5,21 @@ variables:
 - group: Pipeline-variables
 
 trigger:
-  - branches:
+  branches:
     include:
       - dev
       - master
       - staging
       - releases/*
-  - tags:
+  tags:
     include:
       - v*.*
+  paths:
+    include:
+      - libraries/*
+      - pipeline/*
+      - cicd-scripts/*
+      - azure-pipelines.yml
 
 stages:
 - stage: Build

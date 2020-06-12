@@ -52,8 +52,7 @@ def main():
     # run each element in array
     for script in scripts:
         nameonly = os.path.basename(script[0])
-        workspacepath = script[1]
-        fullworkspacepath = workspacepath + '/' + nameonly
+        fullworkspacepath = script[1]
 
         print('Running job for:' + fullworkspacepath)
 

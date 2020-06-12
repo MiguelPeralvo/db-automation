@@ -12,8 +12,7 @@ def main():
     parser.add_argument("-s", "--shard", help="Databricks workspace", required=True)
     parser.add_argument("-t", "--token", help="Databricks token", required=True)
     parser.add_argument("-c", "--cluster", help="Databricks cluster id", required=True)
-    parser.add_argument("-l", "--localpath", help="Localpath", required=True)
-    parser.add_argument("-w", "--workspacepath", help="DBFS workspace", required=True)
+    parser.add_argument("-d", "--dbfspath", help="DBFS path of the script", required=True)
     parser.add_argument("-o", "--outfilepath", help="Logging output path", required=True)
     parser.add_argument("-p", "--params", help="Params", required=True)
 
@@ -21,8 +20,7 @@ def main():
     shard = args.shard
     token = args.token
     cluster = args.cluster
-    localpath = args.localpath
-    workspacepath = args.workspacepath
+    dbfspath = args.dbfspath
     outfilepath = args.outfilepath
     params = args.params
 
@@ -30,29 +28,18 @@ def main():
     # print('-t is ' + token)
     print('-c is ' + cluster)
     print('-l is ' + localpath)
-    print('-w is ' + workspacepath)
+    print('-d is ' + dbfspath)
     print('-o is ' + outfilepath)
     print('-p is ' + params)
     # Generate array from walking local path
 
-    scripts = []
-    for path, subdirs, files in os.walk(localpath):
-        for name in files:
-            fullpath = path + '/' + name
-            # removes localpath to repo but keeps workspace path
-            fullworkspacepath = workspacepath + '/' + name
-
-            name, file_extension = os.path.splitext(fullpath)
-            if file_extension.lower() in ['.scala', '.sql', '.r', '.py']:
-                row = [fullpath, fullworkspacepath, 1]
-                scripts.append(row)
+    scripts = [dbfspath]
     print('Number of scripts to process: ' + str(len(scripts)))
     print(f'scripts to process: {scripts}')
 
     # run each element in array
     for script in scripts:
-        nameonly = os.path.basename(script[0])
-        fullworkspacepath = script[1]
+        fullworkspacepath = script
 
         print('Running job for:' + fullworkspacepath)
 
@@ -68,7 +55,7 @@ def main():
         pyJsonString = json.loads(jsonString)
 
         values = {
-            'name': nameonly,
+            'name': script,
             'existing_cluster_id': cluster,
             'timeout_seconds': 3600,
             'spark_python_task': {'python_file': fullworkspacepath}

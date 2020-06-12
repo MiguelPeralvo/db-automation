@@ -5,7 +5,7 @@ variables:
 - group: Pipeline-variables
 
 schedules:
-- cron: "38 16 * * *"
+- cron: "45 16 * * *"
   displayName: Daily midnight build
   branches:
     include:
@@ -159,7 +159,7 @@ stages:
 
 - stage: prod
   displayName: Deploy release in prod
-  condition: equals(variables['Build.SourceBranch'], 'refs/tags/prod')
+  condition: eq(variables['Build.SourceBranch'], 'refs/tags/prod')
   jobs:
   - job: prod
     pool:

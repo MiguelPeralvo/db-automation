@@ -21,6 +21,7 @@ trigger:
   tags:
     include:
       - v*.*
+      - prod
 
   paths:
     include:
@@ -140,6 +141,27 @@ stages:
     )
   jobs:
   - job: Release
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
+
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
+
+    - script: |
+        echo "Release"
+      displayName: 'Release stage'
+
+- stage: prod
+  displayName: Deploy release in prod
+  condition: equals(variables['Build.SourceBranch'], 'refs/tags/prod')
+  jobs:
+  - job: prod
     pool:
       vmImage: 'ubuntu-18.04'
 

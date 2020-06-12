@@ -5,7 +5,7 @@ variables:
 - group: Pipeline-variables
 
 schedules:
-- cron: "0 0 * * *"
+- cron: "16 15 * * *"
   displayName: Daily midnight build
   branches:
     include:

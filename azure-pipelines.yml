@@ -116,7 +116,8 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Release
-  condition: or(startsWith(variables['Build.Source'], 'refs/heads/releases'), startsWith(variables['Build.Source'], 'refs/tags/v'))
+  condition: True
+#  condition: or(startsWith(variables['Build.Source'], 'refs/heads/releases'), startsWith(variables['Build.Source'], 'refs/tags/v'))
   jobs:
   - job: Release
     pool:

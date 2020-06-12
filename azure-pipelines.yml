@@ -5,12 +5,15 @@ variables:
 - group: Pipeline-variables
 
 trigger:
-  branches:
+  - branches:
     include:
       - dev
       - master
       - staging
       - releases/*
+  - tags:
+    include:
+      - v*.*
 
 stages:
 - stage: Build
@@ -107,7 +110,7 @@ stages:
 
 - stage: Release
   dependsOn: Build
-  condition: and(succeeded(), startsWith(variables['Build.Source'], 'refs/heads/releases'))
+  condition: and(succeeded(), or(startsWith(variables['Build.Source'], 'refs/heads/releases'), startsWith(variables['tag'], 'refs/heads/releases')))
   jobs:
   - job: Release
     pool:

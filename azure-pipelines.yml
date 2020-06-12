@@ -23,7 +23,14 @@ trigger:
 
 stages:
 - stage: Build
-  condition: or(startsWith(variables['Build.Source'], 'refs/heads/dev'), startsWith(variables['Build.Source'], 'refs/heads/master'), startsWith(variables['Build.Source'], 'refs/pull'))
+  condition: eq(variables['Build.Source'], 'refs/heads/dev')
+#  condition: |
+#    or
+#    (
+#      startsWith(variables['Build.Source'], 'refs/heads/dev'),
+#      startsWith(variables['Build.Source'], 'refs/heads/master'),
+#      startsWith(variables['Build.Source'], 'refs/pull')
+#    )
   jobs:
   - job: Build
     pool:

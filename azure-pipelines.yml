@@ -127,7 +127,7 @@ stages:
       inputs:
         scriptSource: 'filePath'
         scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
+        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params $(MODEL_NAME)'
       displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
     - script: |

@@ -43,14 +43,14 @@ def main():
 
         # Create json from inout parameter list
         paramList = params.split(',')
-        jsonString = '{'
-        for param in paramList:
-            if jsonString != '{':
-                jsonString = jsonString + ','
-            paramElement = param.split('=')
-            jsonString = jsonString + '"' + paramElement[0] + '":"' + paramElement[1] + '"'
-        jsonString = jsonString + '}'
-        pyJsonString = json.loads(jsonString)
+        # jsonString = '{'
+        # for param in paramList:
+        #     if jsonString != '{':
+        #         jsonString = jsonString + ','
+        #     paramElement = param.split('=')
+        #     jsonString = jsonString + '"' + paramElement[0] + '":"' + paramElement[1] + '"'
+        # jsonString = jsonString + '}'
+        pyJsonString = paramList # json.loads(jsonString)
 
         values = {
             'name': script,

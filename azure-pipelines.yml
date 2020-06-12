@@ -124,6 +124,9 @@ stages:
       vmImage: 'ubuntu-18.04'
 
     steps:
+    - script: env | sort
+        displayName: 'Environment / Context'
+
     - task: UsePythonVersion@0
       displayName: 'Use Python 3.7'
       inputs:

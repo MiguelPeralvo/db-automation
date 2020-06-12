@@ -103,7 +103,7 @@ stages:
         cat /home/vsts/.databrickscfg
         echo ""
         echo "-------------"
-        dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model/train_model.py
+        dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model/train_model.py --profile AZDO
 #        databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
 #        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
       displayName: 'Import ML Train Notebook'

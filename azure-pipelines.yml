@@ -33,6 +33,7 @@ stages:
     - checkout: self
       persistCredentials: true
       clean: true
+      displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
 
     #- script: |
     #    git status

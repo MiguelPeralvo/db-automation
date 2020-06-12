@@ -70,7 +70,7 @@ def main():
         jobid = d['job_id']
         # Run Job
         print('Run Request URL: ' + shard + '/api/2.0/jobs/run-now')
-        values = {'job_id': jobid, 'notebook_params': pyJsonString}
+        values = {'job_id': jobid, 'python_params': pyJsonString}
         print('Run Request Data:' + json.dumps(values))
         resp = requests.post(shard + '/api/2.0/jobs/run-now',
                              data=json.dumps(values), auth=("token", token))

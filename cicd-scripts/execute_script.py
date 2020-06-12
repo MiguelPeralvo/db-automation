@@ -95,7 +95,7 @@ def main():
                 if current_state in ['TERMINATED']:
                     result_state = j['state']['result_state']
                     if result_state in ['FAILED']:
-                        sys.exit("script run did not complete. Status is " + result_state)
+                        sys.exit(f"script run did not complete. Status is {result_state}. state_message: {state_message}")
                     else:
                         break
             i = i + 1

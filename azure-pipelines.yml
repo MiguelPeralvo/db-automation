@@ -54,11 +54,14 @@ stages:
       clean: true
       displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
 
-    #- script: |
-    #    git status
-    #    git checkout
-    ##   git checkout $(Build.SourceBranch)
-    #  displayName: 'Get Latest from Branch $(Build.SourceBranchName) / $(Build.SourceBranch) / $(branchName)'
+    - script: |
+        echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+        if [ $(Build.SourceBranchName) != "merge" ]
+        then
+          git checkout $(Build.SourceBranchName)
+        fi
+
+      displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not merging'
 
     - script: |
         python -m pytest --junit-xml=$(Build.Repository.LocalPath)/logs/TEST-LOCAL.xml $(Build.Repository.LocalPath)/libraries/python/dbxdemo/test*.py || true

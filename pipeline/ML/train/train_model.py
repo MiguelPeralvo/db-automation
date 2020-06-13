@@ -7,6 +7,10 @@ import os
 import requests
 import time
 from pyspark.sql.functions import col
+from pyspark.sql import SparkSession
+
+if 'spark' not in locals():
+    spark = SparkSession.builder.appName('Test').getOrCreate()
 
 
 def download_file(data_uri, data_path):
@@ -18,6 +22,7 @@ def download_file(data_uri, data_path):
         with open(data_path, 'w') as f:
             f.write(requests.get(data_uri).text)
 
+
 def download_wine_file(data_uri, home, data_path):
     download_file(data_uri, data_path)
     final_path = f"{home}/mlflow/wine-quality/wine-quality.csv"
@@ -25,19 +30,17 @@ def download_wine_file(data_uri, home, data_path):
     dbutils.fs.cp(f"/tmp/mlflow-wine-quality.csv", final_path)
     return final_path
 
+
 def main():
     parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
     parser.add_argument("-e", "--experiment_name", help="Experiment name", required=True)
     parser.add_argument("-m", "--model_name", help="Model name", required=True)
     parser.add_argument("-r", "--root_path", help="Prefix path", required=True)
 
-
     args = parser.parse_args()
     model_name = args.model_name
     home = args.root_path
     experiment_name = args.experiment_name
-
-
 
     # data_path = "/dbfs/tmp/mlflow-wine-quality.csv"
     temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
@@ -58,13 +61,11 @@ def main():
     import mlflow
     import mlflow.sklearn
 
-
     def eval_metrics(actual, pred):
         rmse = np.sqrt(mean_squared_error(actual, pred))
         mae = mean_absolute_error(actual, pred)
         r2 = r2_score(actual, pred)
         return rmse, mae, r2
-
 
     def train_model(wine_data_path, model_path, alpha, l1_ratio):
         warnings.filterwarnings("ignore")
@@ -147,8 +148,6 @@ def main():
     # MAGIC %md ### Transitioning the model to 'Staging"
 
     # COMMAND ----------
-
-    import mlflow
     client = mlflow.tracking.MlflowClient()
 
     client.transition_model_version_stage(
@@ -158,9 +157,9 @@ def main():
 
     import json
 
-    output=json.dumps({
-      "model_name": model_name,
-      "version": version
+    output = json.dumps({
+        "model_name": model_name,
+        "version": version
     })
 
     print(output)

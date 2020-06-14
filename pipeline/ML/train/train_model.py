@@ -14,6 +14,7 @@ from sklearn.linear_model import ElasticNet
 
 import mlflow
 import mlflow.sklearn
+from pyspark.sql.functions import col
 
 
 if 'spark' not in locals():
@@ -35,6 +36,7 @@ def download_wine_file(data_uri, home, data_path):
     final_path = f"{home}/mlflow/wine-quality/wine-quality.csv"
     print(f"Copying file to {final_path}")
     dbutils.fs.cp(f"/tmp/mlflow-wine-quality.csv", final_path)
+
     return final_path
 
 
@@ -43,17 +45,29 @@ def main():
     parser.add_argument("-e", "--experiment_name", help="Experiment name", required=True)
     parser.add_argument("-m", "--model_name", help="Model name", required=True)
     parser.add_argument("-r", "--root_path", help="Prefix path", required=True)
+    parser.add_argument("-d", "--db_name", help="Output Database name", default="wine", required=False)
+    parser.add_argument(
+        "-t", "--table_name", help="Wine Table name", default="mlops_wine_quality_input",
+        required=False)
+
 
     args = parser.parse_args()
     model_name = args.model_name
     home = args.root_path
     experiment_name = args.experiment_name
+    db = args.db_name.replace("@", "_").replace(".", "_")
+    wine_table = args.table_name
 
     # data_path = "/dbfs/tmp/mlflow-wine-quality.csv"
     temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
     data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
     dbfs_wine_data_path = download_wine_file(data_uri, home, temp_data_path)
-    wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
+    wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).cache()
+    wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
+    wine_df = wine_df.withColumn("quality", col("quality").cast("integer"))
+    spark.sql(f"DROP TABLE IF EXISTS {db}.{wine_table}")
+    wine_df.write.format("delta").mode("overwrite").saveAsTable(f"{db}.{wine_table}")
+    # wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
 
     def eval_metrics(actual, pred):
         rmse = np.sqrt(mean_squared_error(actual, pred))
@@ -61,12 +75,13 @@ def main():
         r2 = r2_score(actual, pred)
         return rmse, mae, r2
 
-    def train_model(wine_data_path, model_path, alpha, l1_ratio):
+    def train_model(wine_input_df, model_path, alpha, l1_ratio):
         warnings.filterwarnings("ignore")
         np.random.seed(40)
 
         # Read the wine-quality csv file (make sure you're running this from the root of MLflow!)
-        data = pd.read_csv(wine_data_path, sep=None)
+        # data = pd.read_csv(wine_data_path, sep=None)
+        data = wine_input_df.toPandas()
 
         # Split the data into training and test sets. (0.75, 0.25) split.
         train, test = train_test_split(data)
@@ -117,7 +132,9 @@ def main():
     alpha_1 = 0.75
     l1_ratio_1 = 0.25
     model_path = 'model'
-    run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
+    # run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
+
+    run_id1 = train_model(wine_input_df=wine_df, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
     model_uri = f"runs:/{run_id1}/{model_path}"
 
     result = mlflow.register_model(

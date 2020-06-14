@@ -164,10 +164,21 @@ stages:
           echo "Staging"
         displayName: 'Staging stage'
 
+#      - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+#        inputs:
+#          url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
+#          token: '$(DATABRICKS_TOKEN)'
+#        displayName: 'Configure Databricks CLI for AZDO'
+
       - script: |
           pip install requests mlflow==1.8.0
       #    pip install -U databricks-cli
         displayName: 'Load Python Dependencies'
+
+      - script: |
+          echo "[registry]" > /root/.databrickscfg
+          echo "host=$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)" >> /root/.databrickscfg
+          echo "token=$(DATABRICKS_TOKEN)" >> /root/.databrickscfg
 
       - task: PythonScript@0
         inputs:

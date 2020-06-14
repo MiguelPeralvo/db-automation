@@ -62,22 +62,31 @@ def copy_artifacts(artifact_uri, artifact_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
+    # parser.add_argument("-d", "--databrickscfg_path", help="Databricks cfg path", required=True)
     parser.add_argument("-s", "--shard", help="Databricks workspace", required=True)
     parser.add_argument("-t", "--token", help="Databricks token", required=True)
     parser.add_argument("-m", "--model_name", help="Model Registry Name", required=True)
     args = parser.parse_args()
 
+    # databrickscfg_path = args.databrickscfg_path
     shard = args.shard
     token = args.token
     model_name = args.model_name
 
     cli_profile_name = "registry"
-    dbutils.fs.put(f"file:///root/.databrickscfg", f"[{cli_profile_name}]\nhost={shard}\ntoken={token}",
-                   overwrite=True)
+    # dbutils.fs.put(f"file:///root/.databrickscfg", f"[{cli_profile_name}]\nhost={shard}\ntoken={token}",
+    #                overwrite=True)
 
     TRACKING_URI = f"databricks://{cli_profile_name}"
     print(f"TRACKING_URI: {TRACKING_URI}")
     artifact_path = 'model'
+    from mlflow.tracking import MlflowClient
+    remote_client = MlflowClient(tracking_uri=TRACKING_URI)
+    # client = mlflow.tracking.MlflowClient()
+    latest_model = remote_client.get_latest_versions(name=model_name, stages=["staging"])
+    print(f"Latest Model: {latest_model}")
+    model_uri = f"runs:/{latest_model[0].run_id}/{artifact_path}"
+    print(f"model_uri: {model_uri}")
     # TODO: WIP, capture the run_id from the model registry
     # artifact_uri = artifact_utils.get_artifact_uri(run_id)
     #

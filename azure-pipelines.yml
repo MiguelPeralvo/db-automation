@@ -171,10 +171,10 @@ stages:
 #        displayName: 'Configure Databricks CLI for AZDO'
 
       - script: |
-          sudo -s
-          echo "[registry]" > /root/.databrickscfg
-          echo "host=$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)" >> /root/.databrickscfg
-          echo "token=$(DATABRICKS_TOKEN)" >> /root/.databrickscfg
+          id
+          echo "[registry]" > $HOME/.databrickscfg
+          echo "host=$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)" >> $HOME/.databrickscfg
+          echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
         displayName: 'Configure mlflow connection to registry'
 
       - script: |

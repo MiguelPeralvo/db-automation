@@ -149,43 +149,43 @@ stages:
     pool:
       vmImage: 'ubuntu-18.04'
     environment: Staging
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - script: env | sort
-              displayName: 'Environment / Context'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: env | sort
+            displayName: 'Environment / Context'
 
-            - task: UsePythonVersion@0
-              displayName: 'Use Python 3.7'
-              inputs:
-                versionSpec: 3.7
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.7'
+            inputs:
+              versionSpec: 3.7
 
-            - script: |
-                echo "Staging"
-              displayName: 'Staging stage'
+          - script: |
+              echo "Staging"
+            displayName: 'Staging stage'
 
-            - script: |
-                id
-                echo $HOME
-                echo "[registry]" > $HOME/.databrickscfg
-                echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
-                echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
-                cat /home/vsts/.databrickscfg
-                mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-              displayName: 'Configure mlflow connection to registry'
+          - script: |
+              id
+              echo $HOME
+              echo "[registry]" > $HOME/.databrickscfg
+              echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
+              echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
+              cat /home/vsts/.databrickscfg
+              mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
+            displayName: 'Configure mlflow connection to registry'
 
-            - script: |
-                pip install requests mlflow==1.8.0
-            #    pip install -U databricks-cli
-              displayName: 'Load Python Dependencies'
+          - script: |
+              pip install requests mlflow==1.8.0
+          #    pip install -U databricks-cli
+            displayName: 'Load Python Dependencies'
 
-            - task: PythonScript@0
-              inputs:
-                scriptSource: 'filePath'
-                scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-                arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
-              displayName: 'Retrieve artifacts from the model registry'
+          - task: PythonScript@0
+            inputs:
+              scriptSource: 'filePath'
+              scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
+              arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
+            displayName: 'Retrieve artifacts from the model registry'
 
 - stage: Release
   dependsOn: []

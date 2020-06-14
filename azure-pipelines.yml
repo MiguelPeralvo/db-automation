@@ -115,20 +115,20 @@ stages:
         arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"'
       displayName: 'Train the new version of the model'
 
-    - script: |
-        cat /home/vsts/.databrickscfg
-        echo ""
-        echo "-------------"
-        databricks workspace mkdirs /Shared/db-automation/batch_test --profile AZDO
-        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
-      displayName: 'Import ML Batch Deploy/Test Notebook'
-
-    - task: PythonScript@0
-      inputs:
-        scriptSource: 'filePath'
-        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params $(MODEL_NAME)'
-      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
+#    - script: |
+#        cat /home/vsts/.databrickscfg
+#        echo ""
+#        echo "-------------"
+#        databricks workspace mkdirs /Shared/db-automation/batch_test --profile AZDO
+#        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
+#      displayName: 'Import ML Batch Deploy/Test Notebook'
+#
+#    - task: PythonScript@0
+#      inputs:
+#        scriptSource: 'filePath'
+#        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
+#        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/batch_test --workspacepath /Shared/db-automation/batch_test --outfilepath /home/vsts/work/1/s/pipeline --params $(MODEL_NAME)'
+#      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
     - script: |
         echo $(response)

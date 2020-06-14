@@ -36,8 +36,8 @@ stages:
     or
     (
       eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+      eq(variables['Build.SourceBranch'], 'refs/heads/master')
+#      startsWith(variables['Build.SourceBranch'], 'refs/pull')
     )
   jobs:
   - job: Build
@@ -134,6 +134,38 @@ stages:
     - script: |
         echo $(response)
       displayName: 'Batch test result'
+
+- stage: Staging
+  dependsOn: []
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/pull')
+#    and(
+#      succeeded(),
+#      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+#    )
+  jobs:
+  - job: Staging
+      pool:
+        vmImage: 'ubuntu-18.04'
+
+      steps:
+        - script: env | sort
+          displayName: 'Environment / Context'
+
+        - task: UsePythonVersion@0
+          displayName: 'Use Python 3.7'
+          inputs:
+            versionSpec: 3.7
+
+        - script: |
+            echo "Release"
+          displayName: 'Release stage'
+
+        - task: PythonScript@0
+            inputs:
+              scriptSource: 'filePath'
+              scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
+              arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) -model $(MODEL_NAME)'
+            displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
 - stage: Release
   dependsOn: []

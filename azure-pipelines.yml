@@ -172,10 +172,12 @@ stages:
 
       - script: |
           id
+          echo $HOME
           echo "[registry]" > $HOME/.databrickscfg
           echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
           echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
-          cat $HOME/.databrickscfg
+          cat /home/vsts/.databrickscfg
+          mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
         displayName: 'Configure mlflow connection to registry'
 
       - script: |
@@ -187,8 +189,8 @@ stages:
         inputs:
           scriptSource: 'filePath'
           scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-          arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --model $(MODEL_NAME)'
-        displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
+          arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
+        displayName: 'Retrieve artifacts from the model registry'
 
 - stage: Release
   dependsOn: []

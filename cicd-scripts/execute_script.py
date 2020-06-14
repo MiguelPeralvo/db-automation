@@ -42,7 +42,8 @@ def main():
         print('Running job for:' + fullworkspacepath)
 
         # Create json from inout parameter list
-        paramList = params.split(',')
+        # Just in case we're escaping them with \ or \\
+        paramList = [param.replace("\\-", "-").replace("\-", "-") for param in params.split(',')]
         # jsonString = '{'
         # for param in paramList:
         #     if jsonString != '{':

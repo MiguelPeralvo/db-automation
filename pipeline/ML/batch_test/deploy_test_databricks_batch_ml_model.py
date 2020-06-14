@@ -31,10 +31,10 @@ def main():
     parser.add_argument("-m", "--model_name", help="Model name", required=True)
     parser.add_argument("-r", "--root_path", help="Prefix path", required=True)
     parser.add_argument("-s", "--stage", help="Stage", default="staging", required=True)
-    parser.add_argument("-d", "--db_name", help="Output Database name", default="wine", required=True)
+    parser.add_argument("-d", "--db_name", help="Output Database name", default="wine", required=False)
     parser.add_argument(
         "-t", "--table_name", help="Output Table name", default="mlops_wine_quality_regression",
-                        required=True)
+                        required=False)
     # parser.add_argument("-p", "--phase", help="Phase", default="qa", required=True)
 
     args = parser.parse_args()

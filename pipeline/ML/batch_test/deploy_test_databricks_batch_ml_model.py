@@ -5,6 +5,7 @@ import mlflow
 import mlflow.sklearn
 from mlflow import pyfunc
 import json
+from pyspark.sql.functions import col
 
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
@@ -48,6 +49,11 @@ def main():
     temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
     data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
     dbfs_wine_data_path = download_wine_file(data_uri, home, temp_data_path)
+    wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).cache()
+    wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
+    data_spark = wine_df.withColumn("quality", col("quality").cast("integer"))
+
+
     # wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
 
     client = mlflow.tracking.MlflowClient()
@@ -57,9 +63,10 @@ def main():
     print(f"model_uri: {model_uri}")
     udf = pyfunc.spark_udf(spark, model_uri)
 
-    data_spark = spark.read.csv(dbfs_wine_data_path, header=True)
+    # data_spark = spark.read.csv(dbfs_wine_data_path, header=True)
     predictions = data_spark.select(udf(*data_spark.columns).alias('prediction'), "*")
 
+    spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
     spark.sql(f"DROP TABLE IF EXISTS {db}.{ml_output_predictions_table}")
     predictions.write.format("delta").mode("overwrite").saveAsTable(f"{db}.{ml_output_predictions_table}")
 
@@ -69,7 +76,7 @@ def main():
     })
 
     print(output)
-
+    dbutils.notebook.exit(output)
 
 if __name__ == '__main__':
     main()

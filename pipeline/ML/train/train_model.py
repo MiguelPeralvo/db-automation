@@ -65,6 +65,7 @@ def main():
     wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).cache()
     wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
     wine_df = wine_df.withColumn("quality", col("quality").cast("integer"))
+    spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
     spark.sql(f"DROP TABLE IF EXISTS {db}.{wine_table}")
     wine_df.write.format("delta").mode("overwrite").saveAsTable(f"{db}.{wine_table}")
     # wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
@@ -158,6 +159,7 @@ def main():
     })
 
     print(output)
+    dbutils.notebook.exit(output)
 
 
 if __name__ == '__main__':

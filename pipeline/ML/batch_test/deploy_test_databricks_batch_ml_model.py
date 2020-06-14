@@ -49,9 +49,9 @@ def main():
     temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
     data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
     dbfs_wine_data_path = download_wine_file(data_uri, home, temp_data_path)
-    wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).cache()
+    wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).drop("quality").cache()
     wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
-    data_spark = wine_df.withColumn("quality", col("quality").cast("integer"))
+    data_spark = wine_df
 
 
     # wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")

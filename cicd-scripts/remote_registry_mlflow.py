@@ -12,6 +12,7 @@ from mlflow.utils.string_utils import strip_prefix
 from mlflow.exceptions import MlflowException
 from mlflow.tracking import artifact_utils
 
+
 def _get_dbfs_endpoint(artifact_uri, artifact_path):
     return "/dbfs/%s/%s" % (strip_prefix(artifact_uri.rstrip('/'), 'dbfs:/'), strip_prefix(artifact_path, '/'))
 
@@ -61,22 +62,37 @@ def copy_artifacts(artifact_uri, artifact_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
-    parser.add_argument("-s", "--shard", help="Databricks workspace", required=True)
-    parser.add_argument("-t", "--token", help="Databricks token", required=True)
+    parser.add_argument("-o", "--output_local_path", help="Output path where the artifacts will be written", required=True)
     parser.add_argument("-m", "--model_name", help="Model Registry Name", required=True)
     args = parser.parse_args()
 
-    shard = args.shard
-    token = args.token
+
     model_name = args.model_name
+    output_local_path = args.output_local_path
 
     cli_profile_name = "registry"
-    dbutils.fs.put(f"file:///root/.databrickscfg", f"[{cli_profile_name}]\nhost={shard}\ntoken={token}",
-                   overwrite=True)
+    # TODO: Document that we assume that the registry profile will be created in the local machine:
+    # dbutils.fs.put(f"file:///root/.databrickscfg", f"[{cli_profile_name}]\nhost={shard}\ntoken={token}",
+    #                overwrite=True)
 
     TRACKING_URI = f"databricks://{cli_profile_name}"
     print(f"TRACKING_URI: {TRACKING_URI}")
     artifact_path = 'model'
+    from mlflow.tracking import MlflowClient
+    remote_client = MlflowClient(tracking_uri=TRACKING_URI)
+    mlflow.set_tracking_uri(TRACKING_URI)
+    # client = mlflow.tracking.MlflowClient()
+    latest_model = remote_client.get_latest_versions(name=model_name, stages=["staging"])
+    print(f"Latest Model: {latest_model}")
+    run_id = latest_model[0].run_id
+    artifact_uri = artifact_utils.get_artifact_uri(run_id)
+    print(f"artifact_uri: {artifact_uri}")
+    model_uri = f"runs:/{latest_model[0].run_id}/{artifact_path}"
+    print(f"model_uri: {model_uri}")
+
+    print(f"Downloading model artifacts to : {output_local_path}")
+    remote_client.download_artifacts(run_id=run_id, path=artifact_path, dst_path=output_local_path)
+
     # TODO: WIP, capture the run_id from the model registry
     # artifact_uri = artifact_utils.get_artifact_uri(run_id)
     #

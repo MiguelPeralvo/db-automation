@@ -12,6 +12,7 @@ from mlflow.utils.string_utils import strip_prefix
 from mlflow.exceptions import MlflowException
 from mlflow.tracking import artifact_utils
 
+
 def _get_dbfs_endpoint(artifact_uri, artifact_path):
     return "/dbfs/%s/%s" % (strip_prefix(artifact_uri.rstrip('/'), 'dbfs:/'), strip_prefix(artifact_path, '/'))
 

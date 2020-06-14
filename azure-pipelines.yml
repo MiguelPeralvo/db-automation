@@ -161,8 +161,13 @@ stages:
           versionSpec: 3.7
 
       - script: |
-          echo "Release"
-        displayName: 'Release stage'
+          echo "Staging"
+        displayName: 'Staging stage'
+
+      - script: |
+          pip install requests
+      #    pip install -U databricks-cli
+        displayName: 'Load Python Dependencies'
 
       - task: PythonScript@0
         inputs:

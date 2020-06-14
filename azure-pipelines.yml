@@ -176,9 +176,11 @@ stages:
         displayName: 'Load Python Dependencies'
 
       - script: |
+          sudo -s
           echo "[registry]" > /root/.databrickscfg
           echo "host=$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)" >> /root/.databrickscfg
           echo "token=$(DATABRICKS_TOKEN)" >> /root/.databrickscfg
+        displayName: 'Configure mlflow connection to registry'
 
       - task: PythonScript@0
         inputs:

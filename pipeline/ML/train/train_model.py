@@ -14,6 +14,9 @@ from sklearn.linear_model import ElasticNet
 
 import mlflow
 import mlflow.sklearn
+import logging
+
+logger = logging.getLogger()
 
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
@@ -114,7 +117,8 @@ def main():
     # notebook_path = f"/Shared/db-automation/train/train_model"
 
     # Using the hosted mlflow tracking server
-    print(f"Experiment name: {experiment_name}")
+    logger.info(f"Experiment name: {experiment_name}")
+    logger.warning(f"Experiment name: {experiment_name}")
     mlflow.set_experiment(experiment_name=experiment_name)
 
     # COMMAND ----------
@@ -124,7 +128,8 @@ def main():
     model_path = 'model'
     run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
     model_uri = f"runs:/{run_id1}/{model_path}"
-    print(f"model_uri: {model_uri}")
+    logger.info(f"model_uri: {model_uri}")
+    logger.warning(f"model_uri: {model_uri}")
 
     result = mlflow.register_model(
         model_uri,

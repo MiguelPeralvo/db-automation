@@ -173,8 +173,9 @@ stages:
       - script: |
           id
           echo "[registry]" > $HOME/.databrickscfg
-          echo "host=$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)" >> $HOME/.databrickscfg
+          echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
           echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
+          cat $HOME/.databrickscfg
         displayName: 'Configure mlflow connection to registry'
 
       - script: |

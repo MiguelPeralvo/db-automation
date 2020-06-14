@@ -1,10 +1,10 @@
 import argparse
 import requests
 import time
-from pyspark.sql.functions import col
 from pyspark.sql import SparkSession
 import os
 import warnings
+import json
 
 import pandas as pd
 import numpy as np
@@ -14,9 +14,7 @@ from sklearn.linear_model import ElasticNet
 
 import mlflow
 import mlflow.sklearn
-# import logging
-#
-# logger = logging.getLogger()
+
 
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
@@ -27,7 +25,7 @@ def download_file(data_uri, data_path):
         print("File {} already exists".format(data_path))
     else:
         print("Downloading {} to {}".format(data_uri, data_path))
-        rsp = requests.get(data_uri)
+        # rsp = requests.get(data_uri)
         with open(data_path, 'w') as f:
             f.write(requests.get(data_uri).text)
 
@@ -41,7 +39,7 @@ def download_wine_file(data_uri, home, data_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
+    parser = argparse.ArgumentParser(description="Train model")
     parser.add_argument("-e", "--experiment_name", help="Experiment name", required=True)
     parser.add_argument("-m", "--model_name", help="Model name", required=True)
     parser.add_argument("-r", "--root_path", help="Prefix path", required=True)
@@ -112,25 +110,15 @@ def main():
 
             return mlflow.active_run().info.run_uuid
 
-    # COMMAND ----------
-
-    # notebook_path = f"/Shared/db-automation/train/train_model"
-
-    # Using the hosted mlflow tracking server
     print(f"Experiment name: {experiment_name}")
-    # logger.info(f"Experiment name: {experiment_name}")
-    # logger.warning(f"Experiment name: {experiment_name}")
     mlflow.set_experiment(experiment_name=experiment_name)
 
-    # COMMAND ----------
 
     alpha_1 = 0.75
     l1_ratio_1 = 0.25
     model_path = 'model'
     run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
     model_uri = f"runs:/{run_id1}/{model_path}"
-    # logger.info(f"model_uri: {model_uri}")
-    # logger.warning(f"model_uri: {model_uri}")
 
     result = mlflow.register_model(
         model_uri,
@@ -139,11 +127,6 @@ def main():
     time.sleep(10)
     version = result.version
 
-    # COMMAND ----------
-
-    # MAGIC %md ### Transitioning the model to 'Staging"
-
-    # COMMAND ----------
     client = mlflow.tracking.MlflowClient()
 
     client.transition_model_version_stage(
@@ -151,7 +134,6 @@ def main():
         version=version,
         stage="staging")
 
-    import json
 
     output = json.dumps({
         "model_name": model_name,

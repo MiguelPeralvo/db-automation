@@ -82,11 +82,17 @@ def main():
     artifact_path = 'model'
     from mlflow.tracking import MlflowClient
     remote_client = MlflowClient(tracking_uri=TRACKING_URI)
+    mlflow.set_tracking_uri(TRACKING_URI)
     # client = mlflow.tracking.MlflowClient()
     latest_model = remote_client.get_latest_versions(name=model_name, stages=["staging"])
     print(f"Latest Model: {latest_model}")
+    run_id = latest_model[0].run_id
+    artifact_uri = artifact_utils.get_artifact_uri(run_id)
+    print(f"artifact_uri: {artifact_uri}")
     model_uri = f"runs:/{latest_model[0].run_id}/{artifact_path}"
     print(f"model_uri: {model_uri}")
+
+
     # TODO: WIP, capture the run_id from the model registry
     # artifact_uri = artifact_utils.get_artifact_uri(run_id)
     #

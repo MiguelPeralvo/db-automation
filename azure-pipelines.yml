@@ -36,8 +36,8 @@ stages:
     or
     (
       eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master')
-#      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      startsWith(variables['Build.SourceBranch'], 'refs/pull')
     )
   jobs:
   - job: Build
@@ -137,7 +137,11 @@ stages:
 
 - stage: Staging
   dependsOn: []
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/pull')
+  condition: |
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/pull'),
+      startsWith(variables['Build.SourceBranch'], 'refs/heads/staging')
+    )
 #    and(
 #      succeeded(),
 #      startsWith(variables['Build.SourceBranch'], 'refs/pull')

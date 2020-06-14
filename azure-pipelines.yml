@@ -37,6 +37,7 @@ stages:
     (
       eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
       eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/staging')
       startsWith(variables['Build.SourceBranch'], 'refs/pull')
     )
   jobs:
@@ -95,10 +96,6 @@ stages:
         token: '$(DATABRICKS_TOKEN)'
       displayName: 'Configure Databricks CLI for AZDO'
 
-      #- script: |
-      #    dbfs ls
-      #  displayName: 'Check config working'
-
     - script: |
         cat /home/vsts/.databrickscfg
         echo ""
@@ -136,16 +133,15 @@ stages:
       displayName: 'Batch test result'
 
 - stage: Staging
-  dependsOn: []
+  dependsOn: [Build]
   condition: |
-    or(
-      startsWith(variables['Build.SourceBranch'], 'refs/pull'),
-      startsWith(variables['Build.SourceBranch'], 'refs/heads/staging')
+    and(
+      succeeded(),
+      or(
+        startsWith(variables['Build.SourceBranch'], 'refs/pull'),
+        eq(variables['Build.SourceBranch'], 'refs/heads/staging')
+      )
     )
-#    and(
-#      succeeded(),
-#      startsWith(variables['Build.SourceBranch'], 'refs/pull')
-#    )
   jobs:
   - job: Staging
     pool:
@@ -163,12 +159,6 @@ stages:
       - script: |
           echo "Staging"
         displayName: 'Staging stage'
-
-#      - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
-#        inputs:
-#          url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
-#          token: '$(DATABRICKS_TOKEN)'
-#        displayName: 'Configure Databricks CLI for AZDO'
 
       - script: |
           id

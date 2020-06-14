@@ -165,11 +165,11 @@ stages:
         displayName: 'Release stage'
 
       - task: PythonScript@0
-          inputs:
-            scriptSource: 'filePath'
-            scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-            arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) -model $(MODEL_NAME)'
-          displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
+        inputs:
+          scriptSource: 'filePath'
+          scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
+          arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) -model $(MODEL_NAME)'
+        displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
 - stage: Release
   dependsOn: []

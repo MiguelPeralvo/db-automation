@@ -104,15 +104,15 @@ stages:
         echo ""
         echo "-------------"
         dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model/train_model.py --profile AZDO
-#        databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
-#        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
+        databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
+        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
       displayName: 'Import ML Train Notebook'
 
     - task: PythonScript@0
       inputs:
         scriptSource: 'filePath'
         scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/execute_script.py'
-        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,db_automation_wine_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"'
+        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model/train_model.py,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"'
       displayName: 'Train the new version of the model'
 
     - script: |

@@ -1,13 +1,19 @@
-import json
-import sys
 import argparse
-import time
-import mlflow
-import os
 import requests
 import time
 from pyspark.sql.functions import col
 from pyspark.sql import SparkSession
+import os
+import warnings
+
+import pandas as pd
+import numpy as np
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import ElasticNet
+
+import mlflow
+import mlflow.sklearn
 
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
@@ -47,19 +53,6 @@ def main():
     data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
     dbfs_wine_data_path = download_wine_file(data_uri, home, temp_data_path)
     wine_data_path = f"/dbfs/{dbfs_wine_data_path}"
-
-    import os
-    import warnings
-    import sys
-
-    import pandas as pd
-    import numpy as np
-    from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-    from sklearn.model_selection import train_test_split
-    from sklearn.linear_model import ElasticNet
-
-    import mlflow
-    import mlflow.sklearn
 
     def eval_metrics(actual, pred):
         rmse = np.sqrt(mean_squared_error(actual, pred))
@@ -121,6 +114,7 @@ def main():
     # notebook_path = f"/Shared/db-automation/train/train_model"
 
     # Using the hosted mlflow tracking server
+    print(f"Experiment name: {experiment_name}")
     mlflow.set_experiment(experiment_name=experiment_name)
 
     # COMMAND ----------

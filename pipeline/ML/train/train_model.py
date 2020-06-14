@@ -1,10 +1,10 @@
 import argparse
 import requests
 import time
-from pyspark.sql.functions import col
 from pyspark.sql import SparkSession
 import os
 import warnings
+import json
 
 import pandas as pd
 import numpy as np
@@ -14,9 +14,8 @@ from sklearn.linear_model import ElasticNet
 
 import mlflow
 import mlflow.sklearn
-# import logging
-#
-# logger = logging.getLogger()
+from pyspark.sql.functions import col
+
 
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
@@ -27,7 +26,7 @@ def download_file(data_uri, data_path):
         print("File {} already exists".format(data_path))
     else:
         print("Downloading {} to {}".format(data_uri, data_path))
-        rsp = requests.get(data_uri)
+        # rsp = requests.get(data_uri)
         with open(data_path, 'w') as f:
             f.write(requests.get(data_uri).text)
 
@@ -37,25 +36,39 @@ def download_wine_file(data_uri, home, data_path):
     final_path = f"{home}/mlflow/wine-quality/wine-quality.csv"
     print(f"Copying file to {final_path}")
     dbutils.fs.cp(f"/tmp/mlflow-wine-quality.csv", final_path)
+
     return final_path
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
+    parser = argparse.ArgumentParser(description="Train model")
     parser.add_argument("-e", "--experiment_name", help="Experiment name", required=True)
     parser.add_argument("-m", "--model_name", help="Model name", required=True)
     parser.add_argument("-r", "--root_path", help="Prefix path", required=True)
+    parser.add_argument("-d", "--db_name", help="Output Database name", default="wine", required=False)
+    parser.add_argument(
+        "-t", "--table_name", help="Wine Table name", default="mlops_wine_quality_input",
+        required=False)
+
 
     args = parser.parse_args()
     model_name = args.model_name
     home = args.root_path
     experiment_name = args.experiment_name
+    db = args.db_name.replace("@", "_").replace(".", "_")
+    wine_table = args.table_name
 
     # data_path = "/dbfs/tmp/mlflow-wine-quality.csv"
     temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
     data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
     dbfs_wine_data_path = download_wine_file(data_uri, home, temp_data_path)
-    wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
+    wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).cache()
+    wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
+    wine_df = wine_df.withColumn("quality", col("quality").cast("integer"))
+    spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
+    spark.sql(f"DROP TABLE IF EXISTS {db}.{wine_table}")
+    wine_df.write.format("delta").mode("overwrite").saveAsTable(f"{db}.{wine_table}")
+    # wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
 
     def eval_metrics(actual, pred):
         rmse = np.sqrt(mean_squared_error(actual, pred))
@@ -63,12 +76,13 @@ def main():
         r2 = r2_score(actual, pred)
         return rmse, mae, r2
 
-    def train_model(wine_data_path, model_path, alpha, l1_ratio):
+    def train_model(wine_input_df, model_path, alpha, l1_ratio):
         warnings.filterwarnings("ignore")
         np.random.seed(40)
 
         # Read the wine-quality csv file (make sure you're running this from the root of MLflow!)
-        data = pd.read_csv(wine_data_path, sep=None)
+        # data = pd.read_csv(wine_data_path, sep=None)
+        data = wine_input_df.toPandas()
 
         # Split the data into training and test sets. (0.75, 0.25) split.
         train, test = train_test_split(data)
@@ -112,25 +126,17 @@ def main():
 
             return mlflow.active_run().info.run_uuid
 
-    # COMMAND ----------
-
-    # notebook_path = f"/Shared/db-automation/train/train_model"
-
-    # Using the hosted mlflow tracking server
     print(f"Experiment name: {experiment_name}")
-    # logger.info(f"Experiment name: {experiment_name}")
-    # logger.warning(f"Experiment name: {experiment_name}")
     mlflow.set_experiment(experiment_name=experiment_name)
 
-    # COMMAND ----------
 
     alpha_1 = 0.75
     l1_ratio_1 = 0.25
     model_path = 'model'
-    run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
+    # run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
+
+    run_id1 = train_model(wine_input_df=wine_df, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
     model_uri = f"runs:/{run_id1}/{model_path}"
-    # logger.info(f"model_uri: {model_uri}")
-    # logger.warning(f"model_uri: {model_uri}")
 
     result = mlflow.register_model(
         model_uri,
@@ -139,11 +145,6 @@ def main():
     time.sleep(10)
     version = result.version
 
-    # COMMAND ----------
-
-    # MAGIC %md ### Transitioning the model to 'Staging"
-
-    # COMMAND ----------
     client = mlflow.tracking.MlflowClient()
 
     client.transition_model_version_stage(
@@ -151,7 +152,6 @@ def main():
         version=version,
         stage="staging")
 
-    import json
 
     output = json.dumps({
         "model_name": model_name,
@@ -159,6 +159,7 @@ def main():
     })
 
     print(output)
+    dbutils.notebook.exit(output)
 
 
 if __name__ == '__main__':

@@ -1,75 +1,82 @@
-# Databricks notebook source
-# MAGIC %md ### Deploy latest mlFlow registry Model to Databricks batch
-
-# COMMAND ----------
-
+import argparse
 import os
 import requests
-
-def download_file(data_uri, data_path):
-  if os.path.exists(data_path):
-      print("File {} already exists".format(data_path))
-  else:
-      print("Downloading {} to {}".format(data_uri,data_path))
-      rsp = requests.get(data_uri)
-      with open(data_path, 'w') as f:
-          f.write(requests.get(data_uri).text)
-
-data_path = "/dbfs/tmp/mlflow-wine-quality.csv"
-data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
-download_file(data_uri, data_path)
-wine_data_path = "/tmp/mlflow-wine-quality.csv"
-
-
-
-
-# COMMAND ----------
-
-# MAGIC %md ###Get Name of Model
-
-# COMMAND ----------
-
-dbutils.widgets.text(name="model_name", defaultValue="automation-wine-model", label="Model Name")
-dbutils.widgets.text(name="stage", defaultValue="staging", label="Stage")
-dbutils.widgets.text(name="phase", defaultValue="qa", label="Phase")
-
-# COMMAND ----------
-
-model_name = dbutils.widgets.get("model_name")
-stage = dbutils.widgets.get("stage")
-phase = dbutils.widgets.get("phase")
-
-
-# COMMAND ----------
-
-# MAGIC %md ### Get the latest version of the model that was put into Staging
-
-# COMMAND ----------
-
 import mlflow
 import mlflow.sklearn
-
-client = mlflow.tracking.MlflowClient()
-latest_model = client.get_latest_versions(name=model_name, stages=[stage])
-# print(latest_model[0])
-
-# COMMAND ----------
 from mlflow import pyfunc
+import json
+from pyspark.sql.functions import col
+
+if 'spark' not in locals():
+    spark = SparkSession.builder.appName('Test').getOrCreate()
+
+def download_file(data_uri, data_path):
+    if os.path.exists(data_path):
+        print("File {} already exists".format(data_path))
+    else:
+        print("Downloading {} to {}".format(data_uri, data_path))
+        # rsp = requests.get(data_uri)
+        with open(data_path, 'w') as f:
+            f.write(requests.get(data_uri).text)
 
 
-model_uri = "runs:/{}/model".format(latest_model[0].run_id)
-udf = pyfunc.spark_udf(spark, model_uri)
+def download_wine_file(data_uri, home, data_path):
+    download_file(data_uri, data_path)
+    final_path = f"{home}/mlflow/wine-quality/wine-quality.csv"
+    print(f"Copying file to {final_path}")
+    dbutils.fs.cp(f"/tmp/mlflow-wine-quality.csv", final_path)
+    return final_path
 
-# COMMAND ----------
+def main():
+    parser = argparse.ArgumentParser(description="Deploy and test batch model")
+    parser.add_argument("-m", "--model_name", help="Model name", required=True)
+    parser.add_argument("-r", "--root_path", help="Prefix path", required=True)
+    parser.add_argument("-s", "--stage", help="Stage", default="staging", required=True)
+    parser.add_argument("-d", "--db_name", help="Output Database name", default="wine", required=False)
+    parser.add_argument(
+        "-t", "--table_name", help="Output Table name", default="mlops_wine_quality_regression",
+                        required=False)
+    # parser.add_argument("-p", "--phase", help="Phase", default="qa", required=True)
 
-# MAGIC %sh wget https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv
+    args = parser.parse_args()
+    model_name = args.model_name
+    home = args.root_path
+    stage = args.stage
+    db = args.db_name.replace("@", "_").replace(".", "_")
+    ml_output_predictions_table = args.table_name
+    # phase = args.phase
 
-# COMMAND ----------
+    temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
+    data_uri = "https://raw.githubusercontent.com/mlflow/mlflow/master/examples/sklearn_elasticnet_wine/wine-quality.csv"
+    dbfs_wine_data_path = download_wine_file(data_uri, home, temp_data_path)
+    wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).drop("quality").cache()
+    wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
+    data_spark = wine_df
 
-data_spark = spark.read.csv(wine_data_path, header=True)
-predictions = data_spark.select(udf(*data_spark.columns).alias('prediction'), "*")
 
+    # wine_data_path = dbfs_wine_data_path.replace("dbfs:", "/dbfs")
 
-# COMMAND ----------
+    client = mlflow.tracking.MlflowClient()
+    latest_model = client.get_latest_versions(name=model_name, stages=[stage])
+    print(f"Latest Model: {latest_model}")
+    model_uri = "runs:/{}/model".format(latest_model[0].run_id)
+    print(f"model_uri: {model_uri}")
+    udf = pyfunc.spark_udf(spark, model_uri)
 
-dbutils.notebook.exit(True)
+    # data_spark = spark.read.csv(dbfs_wine_data_path, header=True)
+    predictions = data_spark.select(udf(*data_spark.columns).alias('prediction'), "*")
+
+    spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
+    spark.sql(f"DROP TABLE IF EXISTS {db}.{ml_output_predictions_table}")
+    predictions.write.format("delta").mode("overwrite").saveAsTable(f"{db}.{ml_output_predictions_table}")
+
+    output = json.dumps({
+        "model_name": model_name,
+        "model_uri": model_uri
+    })
+
+    print(output)
+    dbutils.notebook.exit(output)
+
+if __name__ == '__main__':
+    main()

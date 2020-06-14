@@ -171,16 +171,16 @@ stages:
 #        displayName: 'Configure Databricks CLI for AZDO'
 
       - script: |
-          pip install requests mlflow==1.8.0
-      #    pip install -U databricks-cli
-        displayName: 'Load Python Dependencies'
-
-      - script: |
           sudo -s
           echo "[registry]" > /root/.databrickscfg
           echo "host=$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)" >> /root/.databrickscfg
           echo "token=$(DATABRICKS_TOKEN)" >> /root/.databrickscfg
         displayName: 'Configure mlflow connection to registry'
+
+      - script: |
+          pip install requests mlflow==1.8.0
+      #    pip install -U databricks-cli
+        displayName: 'Load Python Dependencies'
 
       - task: PythonScript@0
         inputs:

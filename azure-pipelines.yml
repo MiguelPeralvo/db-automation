@@ -165,7 +165,7 @@ stages:
         displayName: 'Staging stage'
 
       - script: |
-          pip install requests
+          pip install requests mlflow==1.8.0
       #    pip install -U databricks-cli
         displayName: 'Load Python Dependencies'
 

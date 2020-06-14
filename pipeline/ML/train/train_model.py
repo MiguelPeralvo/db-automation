@@ -84,7 +84,12 @@ def main():
         test_y = test[["quality"]]
 
         # Start a new MLflow training run
-        with mlflow.start_run():
+        with mlflow.start_run() as run:
+            print("MLflow:")
+            print(f"  run_id: {run.info.run_id}")
+            print(f"  experiment_id: {run.info.experiment_id}")
+            print(f"  experiment_id: {run.info.artifact_uri}")
+
             # Fit the Scikit-learn ElasticNet model
             lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=42)
             lr.fit(train_x, train_y)
@@ -125,16 +130,7 @@ def main():
     model_path = 'model'
     run_id1 = train_model(wine_data_path=wine_data_path, model_path=model_path, alpha=alpha_1, l1_ratio=l1_ratio_1)
     model_uri = f"runs:/{run_id1}/{model_path}"
-
-    # COMMAND ----------
-
-    print(model_uri)
-
-    # COMMAND ----------
-
-    # MAGIC %md ## Register the Model in the Model Registry
-
-    # COMMAND ----------
+    print(f"model_uri: {model_uri}")
 
     result = mlflow.register_model(
         model_uri,

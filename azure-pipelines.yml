@@ -173,7 +173,7 @@ stages:
         inputs:
           scriptSource: 'filePath'
           scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-          arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) -model $(MODEL_NAME)'
+          arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --model $(MODEL_NAME)'
         displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
 
 - stage: Release

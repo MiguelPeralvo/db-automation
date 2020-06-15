@@ -5,6 +5,7 @@ from pyspark.sql import SparkSession
 import os
 import warnings
 import json
+import sys
 
 import pandas as pd
 import numpy as np
@@ -159,8 +160,8 @@ def main():
     })
 
     print(output)
-    exit(0)
 
 
 if __name__ == '__main__':
     main()
+    sys.exit(0)

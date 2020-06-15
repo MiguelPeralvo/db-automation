@@ -6,6 +6,7 @@ import mlflow.sklearn
 from mlflow import pyfunc
 import json
 from pyspark.sql.functions import col
+import sys
 
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
@@ -76,7 +77,7 @@ def main():
     })
 
     print(output)
-    exit(0)
 
 if __name__ == '__main__':
     main()
+    sys.exit(0)

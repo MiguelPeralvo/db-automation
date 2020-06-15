@@ -11,21 +11,26 @@ def main():
     parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
     parser.add_argument("-s", "--shard", help="Databricks workspace", required=True)
     parser.add_argument("-t", "--token", help="Databricks token", required=True)
-    parser.add_argument("-c", "--cluster", help="Databricks cluster id", required=True)
     parser.add_argument("-d", "--dbfspath", help="DBFS path of the script", required=True)
     parser.add_argument("-o", "--outfilepath", help="Logging output path", required=True)
     parser.add_argument("-p", "--params", help="Params", required=True)
 
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-c", "--cluster", help="Databricks cluster id")
+    group.add_argument("-pl", "--pool", help="Databricks pool id")
+
     args = parser.parse_args()
     shard = args.shard
     token = args.token
-    cluster = args.cluster
+    cluster = args.cluster or ""
+    pool = args.pool or ""
     dbfspath = args.dbfspath
     outfilepath = args.outfilepath
     params = args.params
 
     print('-s is ' + shard)
     print('-c is ' + cluster)
+    print('-pl is ' + pool)
     print('-d is ' + dbfspath)
     print('-o is ' + outfilepath)
     print('-p is ' + params)
@@ -53,9 +58,20 @@ def main():
         # jsonString = jsonString + '}'
         pyJsonString = paramList # json.loads(jsonString)
 
+        if cluster:
+            exec_platform = 'existing_cluster_id'
+            exec_platform_value = cluster
+        else:
+            raise NotImplementedError
+            # exec_platform = 'new_cluster'
+            # exec_platform_value = {
+            #
+            #     'instance_pool_id': pool
+            # }
+
         values = {
             'name': script,
-            'existing_cluster_id': cluster,
+            exec_platform: exec_platform_value,
             'timeout_seconds': 3600,
             'spark_python_task': {'python_file': fullworkspacepath}
         }

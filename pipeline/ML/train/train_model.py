@@ -159,7 +159,7 @@ def main():
     })
 
     print(output)
-    dbutils.notebook.exit(output)
+    exit(0)
 
 
 if __name__ == '__main__':

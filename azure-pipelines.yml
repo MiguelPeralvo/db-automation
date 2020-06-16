@@ -193,8 +193,8 @@ stages:
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
               ResourceGroupName: '$(RESOURCE_GROUP)'
-              DatafactoryName: 'db-mlops-staging'
-              PipelineFilter: 'mlops_staging'
+              DatafactoryName: '$(STAGING_ADF_NAME)'
+              PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
 
 #          - script: |
 #              id

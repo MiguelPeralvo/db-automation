@@ -1,9 +1,9 @@
 {
-	"name": "pipeline1",
+	"name": "staging_pipeline",
 	"properties": {
 		"activities": [
 			{
-				"name": "Python1",
+				"name": "batch_inference",
 				"type": "DatabricksSparkPython",
 				"dependsOn": [],
 				"policy": {

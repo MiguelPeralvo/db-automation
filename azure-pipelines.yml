@@ -162,8 +162,8 @@ stages:
             displayName: 'Staging stage'
 
           - checkout: self
-              persistCredentials: true
-              clean: true
+            persistCredentials: true
+            clean: true
             displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
 
           - script: |

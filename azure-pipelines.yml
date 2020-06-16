@@ -135,13 +135,10 @@ stages:
   displayName: Deploy in Staging
 #  dependsOn: [Build]
   condition: |
-#    and(
-#      succeeded(),
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/pull'),
       eq(variables['Build.SourceBranch'], 'refs/heads/staging')
     )
-#    )
   jobs:
   - deployment: Staging
     displayName: Deployment in Staging

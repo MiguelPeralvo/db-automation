@@ -133,7 +133,7 @@ stages:
 
 - stage: Staging
   displayName: Deploy in Staging
-  dependsOn: [Build]
+#  dependsOn: [Build]
   condition: |
     and(
       succeeded(),

@@ -164,7 +164,7 @@ stages:
           - checkout: self
               persistCredentials: true
               clean: true
-              displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+            displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
 
           - script: |
               echo "Build.SourceBranchName: $(Build.SourceBranchName)"

@@ -161,6 +161,20 @@ stages:
               echo "Staging"
             displayName: 'Staging stage'
 
+          - checkout: self
+              persistCredentials: true
+              clean: true
+              displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+
+          - script: |
+              echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+              if [ $(Build.SourceBranchName) != "merge" ]
+              then
+                git checkout $(Build.SourceBranchName)
+              fi
+
+            displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
+
           - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
             inputs:
               url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
@@ -205,11 +219,14 @@ stages:
             displayName: 'Retrieve artifacts from the model registry'
 
 - stage: Release
-  dependsOn: []
+  dependsOn: [Build]
   condition: |
-    or(
-      startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
-      startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    and(
+      succeeded(),
+      or(
+        startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+        startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+      )
     )
   jobs:
   - job: Release

@@ -168,6 +168,10 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+                echo $tenantId
+                echo $servicePrincipalId
+
+
                 BEARER_TOKEN=$(curl --location --request POST 'https://login.microsoftonline.com/$tenantId/oauth2/token' \
                 --header 'Content-Type: application/x-www-form-urlencoded' \
                 --data-urlencode 'grant_type=client_credentials' \

@@ -173,7 +173,7 @@ stages:
                 --data-urlencode 'grant_type=client_credentials' \
                 --data-urlencode 'client_id=$servicePrincipalId' \
                 --data-urlencode 'client_secret=$servicePrincipalKey' \
-                --data-urlencode 'resource=https://management.azure.com' | jq -r '.access_token')
+                --data-urlencode 'resource=https://management.azure.com')
 
                 echo $BEARER_TOKEN
 

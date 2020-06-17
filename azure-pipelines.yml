@@ -162,19 +162,27 @@ stages:
               echo "Staging"
             displayName: 'Staging stage'
 
+azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              ResourceGroupName: '$(RESOURCE_GROUP)'
+              DatafactoryName: '$(STAGING_ADF_NAME)'
+              PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
+
+          - task: AzureCLI@2
+            displayName: 'Release path 1 - Update Azure Data Factory Pipeline - Cluster library path to new name'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json
+              useGlobalConfig: true
+
+
+
           - script: |
-             BEARER_TOKEN=$(curl --location --request POST 'https://login.microsoftonline.com/$(tenantId)/oauth2/token' \
-             --header 'Content-Type: application/x-www-form-urlencoded' \
-             --data-urlencode 'grant_type=client_credentials' \
-             --data-urlencode 'client_id=$(clientId)' \
-             --data-urlencode 'client_secret=$(clientSecret)' \
-             --data-urlencode 'resource=https://management.azure.com' | jq -r '.access_token')
-
-             echo $BEARER_TOKEN
-
-             echo "##vso[task.setvariable variable=BEARER_TOKEN;]$BEARER_TOKEN"
-            displayName: 'Get Bearer Token'
-
+              pip install azure-mgmt-resource azure-mgmt-datafactory requests mlflow==1.8.0
+          #    pip install -U databricks-cli
+            displayName: 'Load Python Dependencies'
 
           - checkout: self
             persistCredentials: true
@@ -224,11 +232,6 @@ stages:
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
             displayName: 'Configure mlflow connection to registry'
-
-          - script: |
-              pip install requests mlflow==1.8.0
-          #    pip install -U databricks-cli
-            displayName: 'Load Python Dependencies'
 
           - task: PythonScript@0
             inputs:

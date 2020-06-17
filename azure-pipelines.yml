@@ -177,9 +177,9 @@ stages:
 
           - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
             inputs:
-              url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
-              token: '$(DATABRICKS_TOKEN)'
-            displayName: 'Configure Databricks CLI for AZDO'
+              url: '$(STAGING_WORKSPACE_REGION_URL)/?o=$(STAGING_WORKSPACE_ORG_ID)'
+              token: '$(STAGING_DATABRICKS_TOKEN)'
+            displayName: 'Configure Databricks CLI for AZDO for STAGING'
 
           - script: |
               cat /home/vsts/.databrickscfg

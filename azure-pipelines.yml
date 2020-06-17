@@ -185,6 +185,7 @@ stages:
               cat /home/vsts/.databrickscfg
               echo ""
               echo "-------------"
+              echo $(Build.Repository.LocalPath)
               dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
             displayName: 'Import ML Batch Inference Notebook'
 
@@ -196,15 +197,15 @@ stages:
               DatafactoryName: '$(STAGING_ADF_NAME)'
               PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
 
-#          - script: |
-#              id
-#              echo $HOME
-#              echo "[registry]" > $HOME/.databrickscfg
-#              echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
-#              echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
-#              cat /home/vsts/.databrickscfg
-#              mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-#            displayName: 'Configure mlflow connection to registry'
+          - script: |
+              id
+              echo $HOME
+              echo "[registry]" > $HOME/.databrickscfg
+              echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
+              echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
+              cat /home/vsts/.databrickscfg
+              mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
+            displayName: 'Configure mlflow connection to registry'
 
           - script: |
               pip install requests mlflow==1.8.0

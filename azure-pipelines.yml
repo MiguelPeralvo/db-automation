@@ -187,9 +187,9 @@ stages:
               echo "-------------"
               echo $(Build.Repository.LocalPath)
               ls -latr $(Build.Repository.LocalPath)/"pipeline/ML/inference
-              dbfs mkdir dbfs:/FileStore
+              dbfs mkdir dbfs:/FileStore  --profile AZDO
               dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
-              dbfs ls dbfs:/FileStore/Shared
+              dbfs ls dbfs:/FileStore/Shared  --profile AZDO
             displayName: 'Import ML Batch Inference Notebook'
 
           - task: liprec.vsts-publish-adf.trigger-adf-pipeline.trigger-adf-pipeline@2

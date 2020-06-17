@@ -162,11 +162,6 @@ stages:
               echo "Staging"
             displayName: 'Staging stage'
 
-azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-              ResourceGroupName: '$(RESOURCE_GROUP)'
-              DatafactoryName: '$(STAGING_ADF_NAME)'
-              PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
-
           - task: AzureCLI@2
             displayName: 'Release path 1 - Update Azure Data Factory Pipeline - Cluster library path to new name'
             inputs:
@@ -176,8 +171,6 @@ azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
               inlineScript: |
                 python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json
               useGlobalConfig: true
-
-
 
           - script: |
               pip install azure-mgmt-resource azure-mgmt-datafactory requests mlflow==1.8.0

@@ -3,6 +3,7 @@
 variables:
 - group: Databricks-environment
 - group: Pipeline-variables
+- group: Service-Principal-Variables
 
 schedules:
 - cron: "00 00 * * *"
@@ -161,29 +162,19 @@ stages:
               echo "Staging"
             displayName: 'Staging stage'
 
-          - task: AzureCLI@2
+          - script: |
+             BEARER_TOKEN=$(curl --location --request POST 'https://login.microsoftonline.com/$(tenantId)/oauth2/token' \
+             --header 'Content-Type: application/x-www-form-urlencoded' \
+             --data-urlencode 'grant_type=client_credentials' \
+             --data-urlencode 'client_id=$(clientId)' \
+             --data-urlencode 'client_secret=$(clientSecret)' \
+             --data-urlencode 'resource=https://management.azure.com' | jq -r '.access_token')
+
+             echo $BEARER_TOKEN
+
+             echo "##vso[task.setvariable variable=BEARER_TOKEN;]$BEARER_TOKEN"
             displayName: 'Get Bearer Token'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                echo $tenantId
-                echo $servicePrincipalId
 
-
-                BEARER_TOKEN=$(curl --location --request POST 'https://login.microsoftonline.com/$tenantId/oauth2/token' \
-                --header 'Content-Type: application/x-www-form-urlencoded' \
-                --data-urlencode 'grant_type=client_credentials' \
-                --data-urlencode 'client_id=$servicePrincipalId' \
-                --data-urlencode 'client_secret=$servicePrincipalKey' \
-                --data-urlencode 'resource=https://management.azure.com')
-
-                echo $BEARER_TOKEN
-
-                echo "##vso[task.setvariable variable=BEARER_TOKEN;]$BEARER_TOKEN"
-              addSpnToEnvironment: true
-              useGlobalConfig: true
 
           - checkout: self
             persistCredentials: true

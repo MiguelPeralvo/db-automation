@@ -138,7 +138,10 @@ stages:
   condition: |
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/pull'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/staging')
+      eq(variables['Build.SourceBranch'], 'refs/heads/staging'),
+      startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+      eq(variables['Build.SourceBranch'], 'refs/tags/production')
     )
   jobs:
   - deployment: Staging
@@ -210,14 +213,6 @@ stages:
               dbfs ls dbfs:/FileStore/Shared  --profile AZDO
             displayName: 'Import ML Batch Inference Notebook'
 
-#          - task: liprec.vsts-publish-adf.trigger-adf-pipeline.trigger-adf-pipeline@2
-#            displayName: 'Trigger pipeline run db-mlops-staging'
-#            inputs:
-#              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-#              ResourceGroupName: '$(RESOURCE_GROUP)'
-#              DatafactoryName: '$(STAGING_ADF_NAME)'
-#              PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
-
           - script: |
               id
               echo $HOME
@@ -235,17 +230,6 @@ stages:
               arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
             displayName: 'Retrieve artifacts from the model registry'
 
-- stage: Release
-  dependsOn: [Build]
-  condition: |
-    and(
-      succeeded(),
-      or(
-        startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
-        startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-      )
-    )
-  jobs:
   - job: Release
     pool:
       vmImage: 'ubuntu-18.04'
@@ -263,11 +247,6 @@ stages:
         echo "Release"
       displayName: 'Release stage'
 
-- stage: production
-  displayName: Deploy release in production
-  dependsOn: []
-  condition: eq(variables['Build.SourceBranch'], 'refs/tags/production')
-  jobs:
   - deployment: production
     displayName: Deployment of release in production
     pool:

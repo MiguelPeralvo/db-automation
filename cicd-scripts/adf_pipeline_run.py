@@ -67,7 +67,7 @@ def main():
     adf_client = DataFactoryManagementClient(credentials, subscription_id)
 
     # Create a pipeline run
-    run_response = adf_client.pipelines.create_run(resource_group, adf_name, adf_pipeline_name, parameters={parameters})
+    run_response = adf_client.pipelines.create_run(resource_group, adf_name, adf_pipeline_name, parameters=parameters)
 
     # Monitor the pipeline run
     time.sleep(30)

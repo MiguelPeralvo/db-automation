@@ -231,6 +231,7 @@ stages:
             displayName: 'Retrieve artifacts from the model registry'
 
   - job: Release
+    dependsOn: Staging
     pool:
       vmImage: 'ubuntu-18.04'
 
@@ -248,6 +249,7 @@ stages:
       displayName: 'Release stage'
 
   - deployment: production
+    dependsOn: Release
     displayName: Deployment of release in production
     pool:
       vmImage: 'ubuntu-18.04'

@@ -6,36 +6,15 @@ from datetime import datetime, timedelta
 import argparse
 import time
 
-
-def print_item(group):
-    """Print an Azure object instance."""
-    print("\tName: {}".format(group.name))
-    print("\tId: {}".format(group.id))
-    if hasattr(group, 'location'):
-        print("\tLocation: {}".format(group.location))
-    if hasattr(group, 'tags'):
-        print("\tTags: {}".format(group.tags))
-    if hasattr(group, 'properties'):
-        print_properties(group.properties)
-    print("\n")
-
-
-def print_properties(props):
-    """Print a ResourceGroup properties instance."""
-    if props and hasattr(props, 'provisioning_state') and props.provisioning_state:
-        print("\tProperties:")
-        print("\t\tProvisioning State: {}".format(props.provisioning_state))
-    print("\n")
-
-
 def print_activity_run_details(activity_run):
     """Print activity run details."""
-    print("\n\tActivity run details\n")
-    print("\tActivity run status: {}".format(activity_run.status))
+    now = datetime.utcnow()
+
+    print(f"{now} - Activity run status: {activity_run.status}")
     if activity_run.status in ['Succeeded', 'InProgress']:
-        print(f"activity_run: {activity_run}")
+        print(f"{now} - activity_run: {activity_run}")
     else:
-        print("\tErrors: {}".format(activity_run))
+        print(f"{now} - Errors: {activity_run.error}")
 
 
 def main():
@@ -75,7 +54,7 @@ def main():
         resource_group, adf_name, run_response.run_id)
     print("\n\tPipeline run status: {}".format(pipeline_run.status))
     filter_params = RunFilterParameters(
-        last_updated_after=datetime.now() - timedelta(1), last_updated_before=datetime.now() + timedelta(1))
+        last_updated_after=datetime.utcnow() - timedelta(1), last_updated_before=datetime.utcnow() + timedelta(1))
     query_response = adf_client.activity_runs.query_by_pipeline_run(
         resource_group, adf_name, pipeline_run.run_id, filter_params)
 

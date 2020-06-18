@@ -32,10 +32,10 @@ def print_activity_run_details(activity_run):
     """Print activity run details."""
     print("\n\tActivity run details\n")
     print("\tActivity run status: {}".format(activity_run.status))
-    if activity_run.status == 'Succeeded':
+    if activity_run.status in ['Succeeded', 'InProgress']:
         print(f"activity_run: {activity_run}")
     else:
-        print("\tErrors: {}".format(activity_run.error['message']))
+        print("\tErrors: {}".format(activity_run))
 
 
 def main():
@@ -70,7 +70,7 @@ def main():
     run_response = adf_client.pipelines.create_run(resource_group, adf_name, adf_pipeline_name, parameters=parameters)
 
     # Monitor the pipeline run
-    time.sleep(30)
+    time.sleep(5)
     pipeline_run = adf_client.pipeline_runs.get(
         resource_group, adf_name, run_response.run_id)
     print("\n\tPipeline run status: {}".format(pipeline_run.status))
@@ -78,6 +78,13 @@ def main():
         last_updated_after=datetime.now() - timedelta(1), last_updated_before=datetime.now() + timedelta(1))
     query_response = adf_client.activity_runs.query_by_pipeline_run(
         resource_group, adf_name, pipeline_run.run_id, filter_params)
+
+    while query_response.value[0].status in ['InProgress']:
+        print_activity_run_details(query_response.value[0])
+        time.sleep(3)
+        query_response = adf_client.activity_runs.query_by_pipeline_run(
+            resource_group, adf_name, pipeline_run.run_id, filter_params)
+
     print_activity_run_details(query_response.value[0])
 
 

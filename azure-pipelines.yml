@@ -191,6 +191,7 @@ stages:
               inlineScript: |
                 python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json
               useGlobalConfig: true
+              timeoutInMinutes: 10
 
           - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
             inputs:

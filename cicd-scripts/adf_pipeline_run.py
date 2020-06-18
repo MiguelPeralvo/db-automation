@@ -49,14 +49,12 @@ def main():
     args = parser.parse_args()
 
     resource_group = args.resource_group
-    subscription_id = args.subscription_id
     adf_name = args.adf_name
     adf_pipeline_name = args.adf_pipeline_name
     output_file_path = args.output_file_path
     parameters = args.parameters
 
     print(f"-resource_group is {resource_group}")
-    print(f"-subscription_id is {subscription_id}")
     print(f"-adf_name is {adf_name}")
     print(f"-adf_pipeline_name is {adf_pipeline_name}")
     print(f"-output_file_path is {output_file_path}")

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import argparse
 import time
 
+
 def print_activity_run_details(activity_run):
     """Print activity run details."""
     now = datetime.utcnow()

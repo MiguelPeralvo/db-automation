@@ -183,7 +183,7 @@ stages:
             displayName: 'Load Python Dependencies'
 
           - task: AzureCLI@2
-            displayName: 'Release path 1 - Update Azure Data Factory Pipeline - Cluster library path to new name'
+            displayName: 'Trigger Azure Data Factory Pipeline $(STAGING_ADF_NAME)/$(STAGING_ADF_PIPELINE_NAME)'
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
               scriptType: bash
@@ -209,13 +209,13 @@ stages:
               dbfs ls dbfs:/FileStore/Shared  --profile AZDO
             displayName: 'Import ML Batch Inference Notebook'
 
-          - task: liprec.vsts-publish-adf.trigger-adf-pipeline.trigger-adf-pipeline@2
-            displayName: 'Trigger pipeline run db-mlops-staging'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-              ResourceGroupName: '$(RESOURCE_GROUP)'
-              DatafactoryName: '$(STAGING_ADF_NAME)'
-              PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
+#          - task: liprec.vsts-publish-adf.trigger-adf-pipeline.trigger-adf-pipeline@2
+#            displayName: 'Trigger pipeline run db-mlops-staging'
+#            inputs:
+#              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+#              ResourceGroupName: '$(RESOURCE_GROUP)'
+#              DatafactoryName: '$(STAGING_ADF_NAME)'
+#              PipelineFilter: '$(STAGING_ADF_PIPELINE_NAME)'
 
           - script: |
               id

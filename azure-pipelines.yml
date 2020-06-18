@@ -178,7 +178,7 @@ stages:
             displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
 
           - script: |
-              pip install azure-mgmt-resource azure-mgmt-datafactory requests mlflow==1.8.0
+              pip install azure-cli-core azure-mgmt-resource azure-mgmt-datafactory requests mlflow==1.8.0
           #    pip install -U databricks-cli
             displayName: 'Load Python Dependencies'
 

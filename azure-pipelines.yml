@@ -139,7 +139,7 @@ stages:
   condition: |
     or(
       and(
-        eq(variable['Build.Reason'], 'PullRequest'),
+        eq(variables['Build.Reason'], 'PullRequest'),
         startsWith(variables['Build.SourceBranch'], 'refs/pull'),
         eq(variables['System.PullRequest.TargetBranch'], 'release')
       ),
@@ -152,7 +152,7 @@ stages:
   - deployment: Staging
     condition: |
       and(
-        eq(variable['Build.Reason'], 'PullRequest'),
+        eq(variables['Build.Reason'], 'PullRequest'),
         startsWith(variables['Build.SourceBranch'], 'refs/pull'),
         eq(variables['System.PullRequest.TargetBranch'], 'release')
       )

@@ -110,38 +110,30 @@ stages:
       displayName: 'Configure Databricks CLI for AZDO'
 
     - script: |
-        cat /home/vsts/.databrickscfg
-        echo ""
-        echo "-------------"
-        dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model.py --profile AZDO
-        python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py  --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"
-      displayName: 'Train and register the best version of the model'
-
-#    - task: PythonScript@0
-#      inputs:
-#        scriptSource: 'filePath'
-#        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/execute_script.py'
-#        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"'
-#      displayName: 'Train the new version of the model'
+        if [ $(Build.SourceBranchName) != "release" ] && [ $(Build.Reason) = "IndividualCI" ]
+        then
+          cat /home/vsts/.databrickscfg
+          echo ""
+          echo "-------------"
+          dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model.py --profile AZDO
+          python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py  --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"
+        else
+          echo "We're not training/registering the model in this event"
+        fi
+      displayName: 'Train and register the best version of the model. Build.SourceBranchName: $(Build.SourceBranchName). Build.Reason:  $(Build.Reason)'
 
     - script: |
-        cat /home/vsts/.databrickscfg
-        echo ""
-        echo "-------------"
-        dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --profile AZDO
-        python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation,\-s,staging"
-      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
-
-#    - task: PythonScript@0
-#      inputs:
-#        scriptSource: 'filePath'
-#        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/execute_script.py'
-#        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation,\-s,staging"'
-#      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
-
-    - script: |
-        echo $(response)
-      displayName: 'Batch test result'
+        if [ $(Build.SourceBranchName) != "release" ] && [ $(Build.Reason) = "IndividualCI" ]
+        then
+          cat /home/vsts/.databrickscfg
+          echo ""
+          echo "-------------"
+          dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --profile AZDO
+          python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation,\-s,staging"
+        else
+          echo "We're not training/registering the model in this event"
+        fi
+      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch. Build.SourceBranchName: $(Build.SourceBranchName). Build.Reason:  $(Build.Reason)'
 
 - stage: Release
   displayName: Release

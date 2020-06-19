@@ -1,5 +1,5 @@
 {
-	"name": "data_ml_pipeline_x",
+	"name": "data_ml_pipeline",
 	"properties": {
 		"description": "data_ml_pipeline",
 		"activities": [

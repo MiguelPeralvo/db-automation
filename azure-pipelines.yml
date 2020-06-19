@@ -45,6 +45,20 @@ stages:
     - script: env | sort
       displayName: 'Environment / Context'
 
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+
+    - script: |
+        echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+        if [ $(Build.SourceBranchName) != "merge" ]
+        then
+          git checkout $(Build.SourceBranchName)
+        fi
+
+      displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
+
     - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
       displayName: 'Deploy JSON files to adf-test'
       inputs:

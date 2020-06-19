@@ -60,11 +60,11 @@ stages:
       displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
 
     - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
-      displayName: 'Deploy JSON files to adf-test'
+      displayName: 'Deploy JSON files to $(STAGING_ADF_NAME)'
       inputs:
         azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-        ResourceGroupName: '$(RESOURCE_GROUP)'
-        DatafactoryName: '$(STAGING_ADF_NAME)'
+        ResourceGroupName: 'miguel'
+        DatafactoryName: 'db-mlops-staging'
         ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
         PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json
 

@@ -1,0 +1,1 @@
+print("batch_inference")

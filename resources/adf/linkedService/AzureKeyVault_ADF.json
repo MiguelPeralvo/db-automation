@@ -1,0 +1,10 @@
+{
+	"name": "AzureKeyVault_ADF",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://miguel-kv.vault.azure.net/"
+		}
+	}
+}

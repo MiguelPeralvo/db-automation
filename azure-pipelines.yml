@@ -3,6 +3,7 @@
 variables:
 - group: Databricks-environment
 - group: Pipeline-variables
+- group: Service-Principal-Variables
 
 schedules:
 - cron: "00 00 * * *"
@@ -37,7 +38,6 @@ stages:
     (
       eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
       eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/staging'),
       startsWith(variables['Build.SourceBranch'], 'refs/pull')
     )
   jobs:
@@ -132,87 +132,122 @@ stages:
         echo $(response)
       displayName: 'Batch test result'
 
-- stage: Staging
-  dependsOn: [Build]
-  condition: |
-    and(
-      succeeded(),
-      or(
-        startsWith(variables['Build.SourceBranch'], 'refs/pull'),
-        eq(variables['Build.SourceBranch'], 'refs/heads/staging')
-      )
-    )
-  jobs:
-  - job: Staging
-    pool:
-      vmImage: 'ubuntu-18.04'
-
-    steps:
-      - script: env | sort
-        displayName: 'Environment / Context'
-
-      - task: UsePythonVersion@0
-        displayName: 'Use Python 3.7'
-        inputs:
-          versionSpec: 3.7
-
-      - script: |
-          echo "Staging"
-        displayName: 'Staging stage'
-
-      - script: |
-          id
-          echo $HOME
-          echo "[registry]" > $HOME/.databrickscfg
-          echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
-          echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
-          cat /home/vsts/.databrickscfg
-          mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-        displayName: 'Configure mlflow connection to registry'
-
-      - script: |
-          pip install requests mlflow==1.8.0
-      #    pip install -U databricks-cli
-        displayName: 'Load Python Dependencies'
-
-      - task: PythonScript@0
-        inputs:
-          scriptSource: 'filePath'
-          scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-          arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
-        displayName: 'Retrieve artifacts from the model registry'
-
 - stage: Release
-  dependsOn: []
+  displayName: Release
+#  dependsOn: [Build]
   condition: |
     or(
+      and(
+        startsWith(variables['Build.SourceBranch'], 'refs/pull'),
+        eq(variables['System.PullRequest.TargerBranch'], 'refs/heads/release')
+      ),
+      eq(variables['Build.SourceBranch'], 'refs/heads/release'),
       startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
-      startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+      eq(variables['Build.SourceBranch'], 'refs/tags/production')
     )
   jobs:
-  - job: Release
+  - deployment: Staging
+    condition: |
+      and(
+        startsWith(variables['Build.SourceBranch'], 'refs/pull'),
+        eq(variables['System.PullRequest.TargerBranch'], 'refs/heads/release')
+      )
+    displayName: Deployment in Staging
     pool:
       vmImage: 'ubuntu-18.04'
+    environment: Staging
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: env | sort
+            displayName: 'Environment / Context'
 
-    steps:
-    - script: env | sort
-      displayName: 'Environment / Context'
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.7'
+            inputs:
+              versionSpec: 3.7
 
-    - task: UsePythonVersion@0
-      displayName: 'Use Python 3.7'
-      inputs:
-        versionSpec: 3.7
+          - script: |
+              echo "Staging"
+            displayName: 'Staging stage'
 
-    - script: |
-        echo "Release"
-      displayName: 'Release stage'
 
-- stage: production
-  displayName: Deploy release in production
-  dependsOn: []
-  condition: eq(variables['Build.SourceBranch'], 'refs/tags/production')
-  jobs:
-  - deployment: production
+          - checkout: self
+            persistCredentials: true
+            clean: true
+            displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+
+          - script: |
+              echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+              if [ $(Build.SourceBranchName) != "merge" ]
+              then
+                git checkout $(Build.SourceBranchName)
+              fi
+
+            displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
+
+          - script: |
+              pip install azure-cli-core azure-mgmt-resource azure-mgmt-datafactory requests mlflow==1.8.0
+          #    pip install -U databricks-cli
+            displayName: 'Load Python Dependencies'
+
+          - task: AzureCLI@2
+            displayName: 'Trigger Azure Data Factory Pipeline $(STAGING_ADF_NAME)/$(STAGING_ADF_PIPELINE_NAME)'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json
+              useGlobalConfig: true
+              timeoutInMinutes: 10
+
+          - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+            inputs:
+              url: '$(STAGING_WORKSPACE_REGION_URL)/?o=$(STAGING_WORKSPACE_ORG_ID)'
+              token: '$(STAGING_DATABRICKS_TOKEN)'
+            displayName: 'Configure Databricks CLI for AZDO for STAGING'
+
+
+          - script: |
+              cat /home/vsts/.databrickscfg
+              echo ""
+              echo "-------------"
+              echo $(Build.Repository.LocalPath)
+              ls -latr $(Build.Repository.LocalPath)/"pipeline/ML/inference"
+              dbfs mkdirs dbfs:/FileStore/Shared/db-automation/ML  --profile AZDO
+              dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
+              dbfs ls dbfs:/FileStore/Shared  --profile AZDO
+            displayName: 'Import ML Batch Inference Notebook'
+
+          - script: |
+              id
+              echo $HOME
+              echo "[registry]" > $HOME/.databrickscfg
+              echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
+              echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
+              cat /home/vsts/.databrickscfg
+              mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
+            displayName: 'Configure mlflow connection to registry'
+
+          - task: PythonScript@0
+            inputs:
+              scriptSource: 'filePath'
+              scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
+              arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
+            displayName: 'Retrieve artifacts from the model registry'
+
+
+  - deployment: Production
+    condition: |
+      or(
+        eq(variables['Build.SourceBranch'], 'refs/heads/release'),
+        startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+        startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+        eq(variables['Build.SourceBranch'], 'refs/tags/production')
+      )
     displayName: Deployment of release in production
     pool:
       vmImage: 'ubuntu-18.04'

@@ -38,6 +38,7 @@ stages:
     (
       eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
       eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/release'),
       startsWith(variables['Build.SourceBranch'], 'refs/pull')
     )
   jobs:
@@ -138,8 +139,9 @@ stages:
   condition: |
     or(
       and(
+        eq(variable['Build.Reason'], 'PullRequest'),
         startsWith(variables['Build.SourceBranch'], 'refs/pull'),
-        eq(variables['System.PullRequest.TargerBranch'], 'refs/heads/release')
+        eq(variables['System.PullRequest.TargetBranch'], 'release')
       ),
       eq(variables['Build.SourceBranch'], 'refs/heads/release'),
       startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
@@ -150,8 +152,9 @@ stages:
   - deployment: Staging
     condition: |
       and(
+        eq(variable['Build.Reason'], 'PullRequest'),
         startsWith(variables['Build.SourceBranch'], 'refs/pull'),
-        eq(variables['System.PullRequest.TargerBranch'], 'refs/heads/release')
+        eq(variables['System.PullRequest.TargetBranch'], 'release')
       )
     displayName: Deployment in Staging for integration testing
     pool:

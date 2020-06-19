@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "db-mlops-staging"
 		},
+		"db_mlops_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'db_mlops'"
+		},
 		"db_mlops_staging_accessToken": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'db_mlops_staging'"
@@ -37,6 +41,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"db_mlops_accessToken": {
+						"value": "[parameters('db_mlops_accessToken')]"
 					},
 					"db_mlops_staging_accessToken": {
 						"value": "[parameters('db_mlops_staging_accessToken')]"

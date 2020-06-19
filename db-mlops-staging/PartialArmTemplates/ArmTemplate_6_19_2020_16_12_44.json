@@ -6,14 +6,6 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "db-mlops-staging"
-		},
-		"db_mlops_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'db_mlops'"
-		},
-		"db_mlops_staging_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'db_mlops_staging'"
 		}
 	},
 	"variables": {
@@ -65,25 +57,7 @@
 					"domain": "https://adb-4072795347483377.17.azuredatabricks.net",
 					"accessToken": {
 						"type": "SecureString",
-						"value": "[parameters('db_mlops_accessToken')]"
-					},
-					"existingClusterId": "0615-192530-lefty261"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/db_mlops_staging')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-4072795347483377.17.azuredatabricks.net",
-					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('db_mlops_staging_accessToken')]"
+						"value": "**********"
 					},
 					"existingClusterId": "0615-192530-lefty261"
 				}

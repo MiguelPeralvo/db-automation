@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "db-mlops-staging"
 		},
+		"db_mlops_accessToken": {
+			"value": ""
+		},
 		"db_mlops_staging_accessToken": {
 			"value": ""
 		},

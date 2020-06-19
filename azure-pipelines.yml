@@ -188,7 +188,6 @@ stages:
               echo "Staging"
             displayName: 'Staging stage'
 
-
           - checkout: self
             persistCredentials: true
             clean: true
@@ -291,54 +290,49 @@ stages:
               echo "production"
             displayName: 'production stage'
 
-#- script: |
-#    cat /home/vsts/.databrickscfg
-#    echo ""
-#    echo "-------------"
-#    databricks workspace mkdirs /Shared/db-automation/deploy --profile AZDO
-#    databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/deploy/deploy_azure_ml_model.py" "/Shared/db-automation/deploy/deploy_azure_ml_model"  --language PYTHON -o --profile AZDO
-#  displayName: 'Import ML Deploy Notebook'
-#
-#- task: PythonScript@0
-#  inputs:
-#    scriptSource: 'filePath'
-#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Shared/db-automation/deploy --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME)'
-#  displayName: 'Deploy mlFlow Model from Registry to Azure ML for Testing'
-#
-#- script: |
-#    echo $(response)
-#  displayName: 'API URL'
-#
-#- script: |
-#    cat /home/vsts/.databrickscfg
-#    echo ""
-#    echo "-------------"
-#    databricks workspace mkdirs /Shared/db-automation/test --profile AZDO
-#    databricks workspace import $BUILD_SOURCESDIRECTORY/"pipeline/ML/test/test_api.py" "/Shared/db-automation/test/test_api"  --language PYTHON -o --profile AZDO
-#  displayName: 'Import ML Test Notebook'
-#
-#- task: PythonScript@0
-#  inputs:
-#    scriptSource: 'filePath'
-#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/test --workspacepath /Shared/db-automation/test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME),scoring_uri=$(response)'
-#  displayName: 'Test mlFlow Model from Registry against REST API'
+          - checkout: self
+            persistCredentials: true
+            clean: true
+            displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
 
-#- task: PythonScript@0
-#  inputs:
-#    scriptSource: 'filePath'
-#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/mlflow.py'
-#    arguments: ''
-#  displayName: 'Promote mlFlow Registry model to Production'
-#
-#- script: |
-#    echo $(response)
-#  displayName: 'Model Production Version'
-#
-#- task: PythonScript@0
-#  inputs:
-#    scriptSource: 'filePath'
-#    scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/executenotebook.py'
-#    arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --localpath $(Build.Repository.LocalPath)/pipeline/ML/deploy --workspacepath /Demo/Test --outfilepath /home/vsts/work/1/s/pipeline --params model_name=$(MODEL_NAME),stage="production,phase="prod"'
-#  displayName: 'Deploy mlFlow Model from Registry to Azure ML into Production'
+          - script: |
+              echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+              if [ $(Build.SourceBranchName) != "merge" ]
+              then
+                git checkout $(Build.SourceBranchName)
+              fi
+
+            displayName: 'Get Latest from Branch $(Build.SourceBranchName) if not in PR'
+
+          - script: |
+              pip install azure-cli-core azure-mgmt-resource azure-mgmt-datafactory requests mlflow==1.8.0
+          #    pip install -U databricks-cli
+            displayName: 'Load Python Dependencies'
+
+          - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+            inputs:
+              url: '$(PRODUCTION_WORKSPACE_REGION_URL)/?o=$(PRODUCTION_WORKSPACE_ORG_ID)'
+              token: '$(PRODUCTION_DATABRICKS_TOKEN)'
+            displayName: 'Configure Databricks CLI for AZDO for PRODUCTION'
+
+
+          - script: |
+              cat /home/vsts/.databrickscfg
+              echo ""
+              echo "-------------"
+              echo $(Build.Repository.LocalPath)
+              ls -latr $(Build.Repository.LocalPath)/"pipeline/ML/inference"
+              dbfs mkdirs dbfs:/FileStore/Shared/db-automation/ML  --profile AZDO
+              dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
+              dbfs ls dbfs:/FileStore/Shared  --profile AZDO
+            displayName: 'Import ML Batch Inference script'
+
+          - script: |
+              id
+              echo $HOME
+              echo "[registry]" > $HOME/.databrickscfg
+              echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
+              echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
+              cat /home/vsts/.databrickscfg
+              mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
+            displayName: 'Configure mlflow connection to registry'

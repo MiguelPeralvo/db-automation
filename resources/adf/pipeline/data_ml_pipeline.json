@@ -19,7 +19,7 @@
 					"parameters": []
 				},
 				"linkedServiceName": {
-					"referenceName": "db_mlops_staging",
+					"referenceName": "db_mlops",
 					"type": "LinkedServiceReference"
 				}
 			}

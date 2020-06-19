@@ -17,6 +17,7 @@ trigger:
     include:
       - dev
       - master
+      - release
       - staging
       - releases/*
   tags:

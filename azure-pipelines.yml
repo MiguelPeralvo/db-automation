@@ -31,8 +31,6 @@ trigger:
       - cicd-scripts/*
       - azure-pipelines.yml
 
-
-
 stages:
 - stage: Info
   condition: True

@@ -45,6 +45,15 @@ stages:
     - script: env | sort
       displayName: 'Environment / Context'
 
+    - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
+      displayName: 'Deploy JSON files to adf-test'
+      inputs:
+        azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+        ResourceGroupName: '$(RESOURCE_GROUP)'
+        DatafactoryName: '$(STAGING_ADF_NAME)'
+        ServicePath: resources/adf/linkedService/db_mlops.json
+        PipelinePath: resources/adf/templates/data_ml_pipeline.json
+
 - stage: Build
   condition: |
     or

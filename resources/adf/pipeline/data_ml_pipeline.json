@@ -1,6 +1,7 @@
 {
 	"name": "data_ml_pipeline",
 	"properties": {
+		"description": "data_ml_pipeline",
 		"activities": [
 			{
 				"name": "batch_inference",

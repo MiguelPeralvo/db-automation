@@ -3,34 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "train_notebook",
-				"type": "DatabricksSparkPython",
-				"dependsOn": [
-					{
-						"activity": "etl",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pythonFile": "dbfs:/FileStore/Shared/db-automation/train/train_model.py"
-				},
-				"linkedServiceName": {
-					"referenceName": "db_mlops_staging",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "etl",
+				"name": "batch_inference",
 				"type": "DatabricksSparkPython",
 				"dependsOn": [],
 				"policy": {
@@ -42,7 +15,8 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"pythonFile": "dbfs:/FileStore/Shared/db-automation/train/train_model.py"
+					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
+					"parameters": []
 				},
 				"linkedServiceName": {
 					"referenceName": "db_mlops_staging",

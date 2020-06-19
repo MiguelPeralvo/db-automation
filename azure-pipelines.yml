@@ -32,6 +32,17 @@ trigger:
       - azure-pipelines.yml
 
 stages:
+- stage: Info
+  condition: True
+  jobs:
+  - job: Info
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
+
 - stage: Build
   condition: |
     or
@@ -196,17 +207,6 @@ stages:
           #    pip install -U databricks-cli
             displayName: 'Load Python Dependencies'
 
-          - task: AzureCLI@2
-            displayName: 'Trigger Azure Data Factory Pipeline $(STAGING_ADF_NAME)/$(STAGING_ADF_PIPELINE_NAME)'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json
-              useGlobalConfig: true
-              timeoutInMinutes: 10
-
           - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
             inputs:
               url: '$(STAGING_WORKSPACE_REGION_URL)/?o=$(STAGING_WORKSPACE_ORG_ID)'
@@ -223,7 +223,7 @@ stages:
               dbfs mkdirs dbfs:/FileStore/Shared/db-automation/ML  --profile AZDO
               dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
               dbfs ls dbfs:/FileStore/Shared  --profile AZDO
-            displayName: 'Import ML Batch Inference Notebook'
+            displayName: 'Import ML Batch Inference script'
 
           - script: |
               id
@@ -242,6 +242,25 @@ stages:
               arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
             displayName: 'Retrieve artifacts from the model registry'
 
+          - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
+            displayName: 'Deploy Data Pipeline to $(STAGING_ADF_NAME) ADF'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              ResourceGroupName: '$(RESOURCE_GROUP)'
+              DatafactoryName: '$(STAGING_ADF_NAME)'
+              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
+              PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json
+
+          - task: AzureCLI@2
+            displayName: 'Trigger Azure Data Factory Pipeline $(STAGING_ADF_NAME)/$(STAGING_ADF_PIPELINE_NAME)'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json
+              useGlobalConfig: true
+              timeoutInMinutes: 10
 
   - deployment: Production
     condition: |

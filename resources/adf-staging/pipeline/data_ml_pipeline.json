@@ -1,5 +1,5 @@
 {
-	"name": "staging_pipeline",
+	"name": "data_ml_pipeline",
 	"properties": {
 		"activities": [
 			{
@@ -15,10 +15,11 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py"
+					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
+					"parameters": []
 				},
 				"linkedServiceName": {
-					"referenceName": "db_mlops_staging",
+					"referenceName": "db_mlops",
 					"type": "LinkedServiceReference"
 				}
 			}

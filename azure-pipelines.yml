@@ -65,18 +65,19 @@ stages:
         azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
         ResourceGroupName: '$(RESOURCE_GROUP)'
         DatafactoryName: '$(STAGING_ADF_NAME)'
-        ServicePath: resources/adf/linkedService/db_mlops.json
-        PipelinePath: resources/adf/templates/data_ml_pipeline.json
+        ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
+        PipelinePath: $(Build.Repository.LocalPath)/resources/adf/templates/data_ml_pipeline.json
 
 - stage: Build
   condition: |
-    or
-    (
-      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/release'),
-      startsWith(variables['Build.SourceBranch'], 'refs/pull')
-    )
+    False
+#    or
+#    (
+#      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+#      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+#      eq(variables['Build.SourceBranch'], 'refs/heads/release'),
+#      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+#    )
   jobs:
   - job: Build
     pool:

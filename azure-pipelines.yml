@@ -66,7 +66,7 @@ stages:
         ResourceGroupName: '$(RESOURCE_GROUP)'
         DatafactoryName: '$(STAGING_ADF_NAME)'
         ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
-        PipelinePath: $(Build.Repository.LocalPath)/resources/adf/templates/data_ml_pipeline.json
+        PipelinePath: $(Build.Repository.LocalPath)/resources/adf/templates/data_ml_pipeline/data_ml_pipeline.json
 
 - stage: Build
   condition: |

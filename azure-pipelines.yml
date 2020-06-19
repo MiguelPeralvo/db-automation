@@ -334,11 +334,11 @@ stages:
               arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
             displayName: 'Retrieve artifacts from the mlflow global (per org) model registry to use them in Databricks Production'
 
-          - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
-            displayName: 'Deploy Data Pipeline to $(PRODUCTION_ADF_NAME) ADF'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-              ResourceGroupName: '$(RESOURCE_GROUP)'
-              DatafactoryName: '$(PRODUCTION_ADF_NAME)'
-              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
-              PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json
+#          - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
+#            displayName: 'Deploy Data Pipeline to $(PRODUCTION_ADF_NAME) ADF'
+#            inputs:
+#              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+#              ResourceGroupName: '$(RESOURCE_GROUP)'
+#              DatafactoryName: '$(PRODUCTION_ADF_NAME)'
+#              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
+#              PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import argparse
 import time
 
+
 def print_activity_run_details(activity_run):
     """Print activity run details."""
     now = datetime.utcnow()
@@ -39,6 +40,8 @@ def main():
     print(f"-output_file_path is {output_file_path}")
     print(f"-parameters is {parameters}")
     credentials, subscription_id = get_azure_cli_credentials()
+
+    print(f"subscription_id is {subscription_id}")
 
     # The data factory name. It must be globally unique.
 

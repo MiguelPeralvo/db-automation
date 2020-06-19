@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "db-mlops"
+		},
+		"db_mlops_accessToken": {
+			"value": ""
+		},
+		"db_mlops_staging_accessToken": {
+			"value": ""
+		},
+		"AzureKeyVault_ADF_properties_typeProperties_baseUrl": {
+			"value": "https://miguel-kv.vault.azure.net/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

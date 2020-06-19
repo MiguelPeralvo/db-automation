@@ -33,16 +33,16 @@ trigger:
       - azure-pipelines.yml
 
 stages:
-- stage: Info
-  condition: True
-  jobs:
-  - job: Info
-    pool:
-      vmImage: 'ubuntu-18.04'
-
-    steps:
-    - script: env | sort
-      displayName: 'Environment / Context'
+#- stage: Info
+#  condition: True
+#  jobs:
+#  - job: Info
+#    pool:
+#      vmImage: 'ubuntu-18.04'
+#
+#    steps:
+#    - script: env | sort
+#      displayName: 'Environment / Context'
 
 - stage: Build
   condition: |
@@ -110,40 +110,30 @@ stages:
       displayName: 'Configure Databricks CLI for AZDO'
 
     - script: |
-        cat /home/vsts/.databrickscfg
-        echo ""
-        echo "-------------"
-        dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model.py --profile AZDO
-        databricks workspace mkdirs /Shared/db-automation/train --profile AZDO
-        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" "/Shared/db-automation/train/train_model"  --language PYTHON -o --profile AZDO
-      displayName: 'Import ML Train Notebook'
-
-    - task: PythonScript@0
-      inputs:
-        scriptSource: 'filePath'
-        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/execute_script.py'
-        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"'
-      displayName: 'Train the new version of the model'
+        if [ $(Build.SourceBranchName) != "release" ] && [ $(Build.Reason) = "IndividualCI" ]
+        then
+          cat /home/vsts/.databrickscfg
+          echo ""
+          echo "-------------"
+          dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/train/train_model.py" dbfs:/FileStore/Shared/db-automation/train/train_model.py --profile AZDO
+          python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py  --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/train/train_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-e,/Shared/db-automation/train/train_model,\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation"
+        else
+          echo "We're not training/registering the model in this event"
+        fi
+      displayName: 'Train and register the best version of the model. Build.SourceBranchName: $(Build.SourceBranchName). Build.Reason:  $(Build.Reason)'
 
     - script: |
-        cat /home/vsts/.databrickscfg
-        echo ""
-        echo "-------------"
-        dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --profile AZDO
-        databricks workspace mkdirs /Shared/db-automation/batch_test --profile AZDO
-        databricks workspace import $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" "/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model"  --language PYTHON -o --profile AZDO
-      displayName: 'Import ML Batch Deploy/Test Notebook'
-
-    - task: PythonScript@0
-      inputs:
-        scriptSource: 'filePath'
-        scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/execute_script.py'
-        arguments: '--shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation,\-s,staging"'
-      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch'
-
-    - script: |
-        echo $(response)
-      displayName: 'Batch test result'
+        if [ $(Build.SourceBranchName) != "release" ] && [ $(Build.Reason) = "IndividualCI" ]
+        then
+          cat /home/vsts/.databrickscfg
+          echo ""
+          echo "-------------"
+          dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --profile AZDO
+          python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation,\-s,staging"
+        else
+          echo "We're not training/registering the model in this event"
+        fi
+      displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch. Build.SourceBranchName: $(Build.SourceBranchName). Build.Reason:  $(Build.Reason)'
 
 - stage: Release
   displayName: Release
@@ -233,14 +223,14 @@ stages:
               echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-            displayName: 'Configure mlflow connection to registry'
+            displayName: 'Configure mlflow client connection to mlflow global (per org) model registry'
 
           - task: PythonScript@0
             inputs:
               scriptSource: 'filePath'
               scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
               arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
-            displayName: 'Retrieve artifacts from the model registry'
+            displayName: 'Retrieve artifacts from the mlflow global (per org) model registry to use them in Databricks Staging'
 
           - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
             displayName: 'Deploy Data Pipeline to $(STAGING_ADF_NAME) ADF'
@@ -335,4 +325,20 @@ stages:
               echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-            displayName: 'Configure mlflow connection to registry'
+            displayName: 'Configure mlflow client connection to global mlflow global (per org) model registry'
+
+          - task: PythonScript@0
+            inputs:
+              scriptSource: 'filePath'
+              scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
+              arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
+            displayName: 'Retrieve artifacts from the mlflow global (per org) model registry to use them in Databricks Production'
+
+          - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
+            displayName: 'Deploy Data Pipeline to $(PRODUCTION_ADF_NAME) ADF'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              ResourceGroupName: '$(RESOURCE_GROUP)'
+              DatafactoryName: '$(PRODUCTION_ADF_NAME)'
+              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
+              PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json

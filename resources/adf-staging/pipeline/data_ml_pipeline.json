@@ -1,5 +1,5 @@
 {
-	"name": "staging_pipeline",
+	"name": "data_ml_pipeline",
 	"properties": {
 		"annotations": []
 	}

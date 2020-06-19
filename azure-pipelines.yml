@@ -33,16 +33,16 @@ trigger:
       - azure-pipelines.yml
 
 stages:
-- stage: Info
-  condition: True
-  jobs:
-  - job: Info
-    pool:
-      vmImage: 'ubuntu-18.04'
-
-    steps:
-    - script: env | sort
-      displayName: 'Environment / Context'
+#- stage: Info
+#  condition: True
+#  jobs:
+#  - job: Info
+#    pool:
+#      vmImage: 'ubuntu-18.04'
+#
+#    steps:
+#    - script: env | sort
+#      displayName: 'Environment / Context'
 
 - stage: Build
   condition: |
@@ -242,14 +242,14 @@ stages:
               arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
             displayName: 'Retrieve artifacts from the model registry'
 
-          - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
-            displayName: 'Deploy Data Pipeline to $(STAGING_ADF_NAME) ADF'
-            inputs:
-              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
-              ResourceGroupName: '$(RESOURCE_GROUP)'
-              DatafactoryName: '$(STAGING_ADF_NAME)'
-              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
-              PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json
+#          - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
+#            displayName: 'Deploy Data Pipeline to $(STAGING_ADF_NAME) ADF'
+#            inputs:
+#              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+#              ResourceGroupName: '$(RESOURCE_GROUP)'
+#              DatafactoryName: '$(STAGING_ADF_NAME)'
+#              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
+#              PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json
 
           - task: AzureCLI@2
             displayName: 'Trigger Azure Data Factory Pipeline $(STAGING_ADF_NAME)/$(STAGING_ADF_PIPELINE_NAME)'
@@ -336,3 +336,15 @@ stages:
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
             displayName: 'Configure mlflow connection to registry'
+
+
+          - task: AzureCLI@2
+            displayName: 'Trigger Azure Data Factory Pipeline $(PRODUCTION_ADF_NAME)/$(PRODUCTION_ADF_PIPELINE_NAME)'
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(PRODUCTION_ADF_NAME) -p $(PRODUCTION_ADF_PIPELINE_NAME) -o ./logs/json
+              useGlobalConfig: true
+              timeoutInMinutes: 10

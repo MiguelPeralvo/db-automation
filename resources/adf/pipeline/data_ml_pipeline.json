@@ -1,0 +1,30 @@
+{
+	"name": "data_ml_pipeline",
+	"properties": {
+		"description": "data_ml_pipeline",
+		"activities": [
+			{
+				"name": "batch_inference",
+				"type": "DatabricksSparkPython",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
+					"parameters": []
+				},
+				"linkedServiceName": {
+					"referenceName": "db_mlops",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

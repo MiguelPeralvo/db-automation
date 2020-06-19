@@ -1,0 +1,23 @@
+{
+	"name": "data_ml_pipeline",
+	"description": "data_ml_pipeline",
+	"image": "<svg width=\"400px\" height=\"240px\" viewBox=\"0 0 400 240\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><g transform=\"matrix(1, 0, 0, 1, 0, 0)\" clip-path=\"url(#mainClip25428)\"><g transform=\"matrix(0.8438005116845446, 0, 0, 0.8438005116845446, 114.35424806401872, 84.21900255842272)\"><g transform=\"matrix(1, 0, 0, 1, 0, 0)\"><g transform=\"matrix(1, 0, 0, 1, 0, 0)\"><g transform=\"matrix(1, 0, 0, 1, 0, 0)\"><path d=\"M 2,0 L 191,0 C 191.89543050033842,0 193,1.1045694996615871 193,2 L 193,81.80913899932317 C 193,82.70456949966157 191.89543050033842,83.80913899932317 191,83.80913899932317 L 2,83.80913899932317 C 1.1045694996615871,83.80913899932317 0,82.70456949966157 0,81.80913899932317 L 0,2 C 0,1.1045694996615871 1.1045694996615871,0 2,0 z\" fill=\"transparent\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0.5, 0.5)\"/><path d=\"M 2,0 L 191,0 C 191.89543050033842,0 193,1.1045694996615871 193,2 L 193,81.80913899932317 C 193,82.70456949966157 191.89543050033842,83.80913899932317 191,83.80913899932317 L 2,83.80913899932317 C 1.1045694996615871,83.80913899932317 0,82.70456949966157 0,81.80913899932317 L 0,2 C 0,1.1045694996615871 1.1045694996615871,0 2,0 z\" fill=\"none\" stroke=\"#C8C8C8\" stroke-width=\"1\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke-miterlimit=\"10\" transform=\"matrix(1, 0, 0, 1, 0.5, 0.5)\"/><g transform=\"matrix(1, 0, 0, 1, 0, 0)\" clip-path=\"url(#CLIP25429)\"><g transform=\"matrix(1, 0, 0, 1, 0.2000000000000106, 1.60456949966158)\"><g transform=\"matrix(1, 0, 0, 1, 0.8, 0.8)\"><rect x=\"0\" y=\"0\" width=\"192\" height=\"80\" fill=\"#F4F4F4\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/><g transform=\"matrix(1, 0, 0, 1, 0, 0)\"><rect x=\"0\" y=\"0\" width=\"192\" height=\"25\" fill=\"#DCDCDC\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/><g transform=\"matrix(1, 0, 0, 1, 0, 0)\" clip-path=\"url(#CLIP25430)\"><text x=\"0\" y=\"10.506005859375001\" style=\"font: 12px Segoe UI\" text-anchor=\"start\" fill=\"#515151\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 5, 6.5)\">Python</text></g></g><g transform=\"matrix(1, 0, 0, 1, 0, 25)\"><g transform=\"matrix(1, 0, 0, 1, 0, 0)\"><g transform=\"matrix(1, 0, 0, 1, 10, 13)\"><path d=\"M 4.5,20.3412015 L 4.5,20.3412015 L 15.010916850000001,25.87162905 L 25.624134150000003,20.3412015 L 25.624134150000003,17.3202969 L 15.062067149999999,15 L 4.5,17.3202969 L 4.5,20.3412015\" fill=\"#DC2126\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/><path d=\"M 4.5,17.3412015 L 4.5,17.3412015 L 15.010916850000001,22.87162905 L 25.624134150000003,17.3412015 L 15.062067149999999,12 L 4.5,17.3412015\" fill=\"#F0542D\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/><path d=\"M 4.5,12.841201515000002 L 4.5,12.841201515000002 L 15.010916850000001,18.37162905 L 25.624134150000003,12.841201515000002 L 25.624134150000003,9.820296840000001 L 15.062067149999999,7.5 L 4.5,9.820296840000001 L 4.5,12.841201515000002\" fill=\"#DC2126\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/><path d=\"M 4.5,9.841201515 L 4.5,9.841201515 L 15.010916850000001,15.37162905 L 25.624134150000003,9.841201515 L 15.062067149999999,4.5 L 4.5,9.841201515\" fill=\"#F0542D\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/></g><g transform=\"matrix(1, 0, 0, 1, 50, 20.828662109375003)\"><text x=\"0\" y=\"12.257006835937501\" style=\"font: 14px Segoe UI\" text-anchor=\"start\" fill=\"black\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 0)\">batch_inference</text></g></g></g></g></g></g></g></g><g transform=\"matrix(1, 0, 0, 1, 194, 1.4045694996615836)\"><g transform=\"matrix(1, 0, 0, 1, 0, 34)\"><g transform=\"matrix(1, 0, 0, 1, 0, 0)\"><path d=\"M 0,0 L 9,0 L 9,12 L 0,12 z\" fill=\"#488E50\" stroke=\"none\" transform=\"matrix(1, 0, 0, 1, 0, 1)\"/></g></g></g></g></g></g><clipPath id=\"mainClip25428\"><rect x=\"0\" y=\"0\" width=\"400\" height=\"240\"/></clipPath><clipPath id=\"CLIP25429\"><path d=\"M 1.1045694996615871,1.1045694996615871 L 192.89543050033842,1.1045694996615871 L 192.89543050033842,83.70456949966157 L 1.1045694996615871,83.70456949966157 z\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/></clipPath><clipPath id=\"CLIP25430\"><path d=\"M 5,6.5 L 192,6.5 L 192,25 L 5,25 z\" transform=\"matrix(1, 0, 0, 1, 0, 0)\"/></clipPath></svg>",
+	"icons": [
+		"DatabricksSparkPython"
+	],
+	"requires": {
+		"linkedservices": {
+			"db_mlops": {
+				"supportTypes": [
+					"AzureDatabricks"
+				]
+			}
+		}
+	},
+	"author": "miguel.peralvo@databricks.com",
+	"annotations": [],
+	"services": [
+		"Azure Data Factory"
+	],
+	"categories": []
+}

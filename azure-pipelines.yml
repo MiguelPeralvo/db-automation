@@ -190,7 +190,7 @@ stages:
               project: '$(System.TeamProjectId)'
               pipeline: 1
               buildVersionToDownload: latestFromBranch
-              branchName: refs/heads/dev
+              branchName: $(System.PullRequest.SourceBranch)
               artifactName: drop
 
           - task: UsePythonVersion@0

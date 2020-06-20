@@ -78,7 +78,9 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
-					"parameters": []
+					"parameters": [
+						"-m mlops_wine_model"
+					]
 				},
 				"linkedServiceName": {
 					"referenceName": "db_mlops",

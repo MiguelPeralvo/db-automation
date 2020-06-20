@@ -131,7 +131,7 @@ stages:
           dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/batch_test/deploy_test_databricks_batch_ml_model.py" dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --profile AZDO
           python $(Build.Repository.LocalPath)/cicd-scripts/execute_script.py --shard $(WORKSPACE_REGION_URL) --token $(DATABRICKS_TOKEN) --cluster $(EXISTING_CLUSTER_ID) --dbfspath dbfs:/FileStore/Shared/db-automation/batch_test/deploy_test_databricks_batch_ml_model.py --outfilepath /home/vsts/work/1/s/pipeline --params "\-m,$(MODEL_NAME),\-r,dbfs:/FileStore/Shared/db-automation,\-s,staging"
         else
-          echo "We're not training/registering the model in this event"
+          echo "We're not testing the model in this event"
         fi
       displayName: 'Deploy and test mlFlow Model from Registry to Databricks batch. Build.SourceBranchName: $(Build.SourceBranchName). Build.Reason:  $(Build.Reason)'
 
@@ -238,7 +238,6 @@ stages:
               azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
               ResourceGroupName: '$(RESOURCE_GROUP)'
               DatafactoryName: '$(STAGING_ADF_NAME)'
-              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
               PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json
 
           - task: AzureCLI@2
@@ -340,5 +339,4 @@ stages:
               azureSubscription: '$(AZURE_SUBSCRIPTION_ID)'
               ResourceGroupName: '$(RESOURCE_GROUP)'
               DatafactoryName: '$(PRODUCTION_ADF_NAME)'
-              ServicePath: $(Build.Repository.LocalPath)/resources/adf/linkedService/db_mlops.json
               PipelinePath: $(Build.Repository.LocalPath)/resources/adf/pipeline/data_ml_pipeline.json

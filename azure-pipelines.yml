@@ -97,17 +97,22 @@ stages:
         failTaskOnFailedTests: true
         publishRunAttachments: true
 
-    - script: |
-        cd $(Build.Repository.LocalPath)/libraries/python/dbxdemo
-        python3 setup.py sdist bdist_wheel
-        ls dist/
-      displayName: 'Build Python Wheel for Libs'
-
     - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
       inputs:
         url: '$(WORKSPACE_REGION_URL)/?o=$(WORKSPACE_ORG_ID)'
         token: '$(DATABRICKS_TOKEN)'
       displayName: 'Configure Databricks CLI for AZDO'
+
+    - script: |
+        cd $(Build.Repository.LocalPath)/libraries/python/dbxdemo
+        python3 setup.py sdist bdist_wheel
+        ls dist/
+        export WHEEL_PATH=`ls $(Build.Repository.LocalPath)/libraries/python/dbxdemo/dist/*.whl`
+        export WHEEL_FILENAME=`basename $WHEEL_PATH`
+        dbfs rm --recursive dbfs:/FileStore/Shared/db-automation/libraries/$WHEEL_FILENAME --profile AZDO
+        dbfs cp --overwrite $WHEEL_PATH dbfs:/FileStore/Shared/db-automation/libraries/$WHEEL_FILENAME --profile AZDO
+      displayName: 'Build Python Wheel for Libs'
+
 
     - script: |
         if [ $(Build.SourceBranchName) != "release" ] && [ $(Build.Reason) = "IndividualCI" ]
@@ -211,8 +216,10 @@ stages:
               echo $(Build.Repository.LocalPath)
               ls -latr $(Build.Repository.LocalPath)/"pipeline/ML/inference"
               dbfs mkdirs dbfs:/FileStore/Shared/db-automation/ML  --profile AZDO
+              dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ETL/lib_use/files.py" dbfs:/FileStore/Shared/db-automation/ETL/files.py --profile AZDO
+              dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/feature_engineering/fe_pre_model.py" dbfs:/FileStore/Shared/db-automation/ML/fe_pre_model.py --profile AZDO
               dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
-              dbfs ls dbfs:/FileStore/Shared  --profile AZDO
+              dbfs ls dbfs:/FileStore/Shared/db-automation  --profile AZDO
             displayName: 'Import ML Batch Inference script'
 
           - script: |
@@ -312,6 +319,8 @@ stages:
               echo $(Build.Repository.LocalPath)
               ls -latr $(Build.Repository.LocalPath)/"pipeline/ML/inference"
               dbfs mkdirs dbfs:/FileStore/Shared/db-automation/ML  --profile AZDO
+              dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ETL/lib_use/files.py" dbfs:/FileStore/Shared/db-automation/ETL/files.py --profile AZDO
+              dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/feature_engineering/fe_pre_model.py" dbfs:/FileStore/Shared/db-automation/ML/fe_pre_model.py --profile AZDO
               dbfs cp --overwrite $(Build.Repository.LocalPath)/"pipeline/ML/inference/batch_model.py" dbfs:/FileStore/Shared/db-automation/ML/batch_model.py --profile AZDO
               dbfs ls dbfs:/FileStore/Shared  --profile AZDO
             displayName: 'Import ML Batch Inference script'

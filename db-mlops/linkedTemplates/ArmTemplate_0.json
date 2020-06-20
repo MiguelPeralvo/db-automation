@@ -156,7 +156,8 @@
 						"typeProperties": {
 							"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
 							"parameters": [
-								"-m mlops-wine-model -r,dbfs:/FileStore/Shared/db-automation -s production -t mlops_wine_quality_regression_final"
+								"-m mlops-wine-model -s staging -o -r dbfs:/FileStore/Shared/db-automation -t test_table",
+								"@pipeline().parameters.environment"
 							]
 						},
 						"linkedServiceName": {
@@ -165,6 +166,12 @@
 						}
 					}
 				],
+				"parameters": {
+					"environment": {
+						"type": "string",
+						"defaultValue": "staging"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [

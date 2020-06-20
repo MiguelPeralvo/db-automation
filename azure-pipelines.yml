@@ -183,15 +183,15 @@ stages:
           - script: env | sort
             displayName: 'Environment / Context'
 
-          - task: DownloadBuildArtifacts@0
-            displayName: 'Download Build Artifacts'
-            inputs:
-              buildType: specific
-              project: '$(System.TeamProjectId)'
-              pipeline: 1
-              buildVersionToDownload: latestFromBranch
-              branchName: '$(System.PullRequest.SourceBranch)'
-              artifactName: drop
+#          - task: DownloadBuildArtifacts@0
+#            displayName: 'Download Build Artifacts'
+#            inputs:
+#              buildType: specific
+#              project: '$(System.TeamProjectId)'
+#              pipeline: 1
+#              buildVersionToDownload: latestFromBranch
+#              branchName: '$(System.PullRequest.SourceBranch)'
+#              artifactName: drop
 
           - task: UsePythonVersion@0
             displayName: 'Use Python 3.7'

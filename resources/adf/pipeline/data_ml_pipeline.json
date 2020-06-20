@@ -4,9 +4,70 @@
 		"description": "data_ml_pipeline",
 		"activities": [
 			{
-				"name": "batch_inference",
+				"name": "feature_engineering",
+				"type": "DatabricksSparkPython",
+				"dependsOn": [
+					{
+						"activity": "ETL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/fe_pre_model.py",
+					"parameters": []
+				},
+				"linkedServiceName": {
+					"referenceName": "db_mlops",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ETL",
 				"type": "DatabricksSparkPython",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ETL/files.py",
+					"parameters": [],
+					"libraries": [
+						{
+							"whl": "dbfs:/FileStore/Shared/db-automation/libraries/dbxdemo-0.0.15-py3-none-any.whl"
+						}
+					]
+				},
+				"linkedServiceName": {
+					"referenceName": "db_mlops",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "batch_inference",
+				"type": "DatabricksSparkPython",
+				"dependsOn": [
+					{
+						"activity": "feature_engineering",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,

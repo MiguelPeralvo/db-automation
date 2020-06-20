@@ -50,8 +50,7 @@ stages:
     (
       eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
       eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/release'),
-      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+      eq(variables['Build.SourceBranch'], 'refs/heads/release')
     )
   jobs:
   - job: Build

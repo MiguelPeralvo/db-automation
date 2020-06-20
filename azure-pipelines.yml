@@ -110,7 +110,7 @@ stages:
         export WHEEL_FILENAME=`basename $WHEEL_PATH`
         dbfs rm --recursive dbfs:/FileStore/Shared/db-automation/libraries/$WHEEL_FILENAME --profile AZDO
         dbfs cp --overwrite $WHEEL_PATH dbfs:/FileStore/Shared/db-automation/libraries/$WHEEL_FILENAME --profile AZDO
-        export BINARY_WHEEL_PATH = $(Build.BinariesDirectory)/drop/$WHEEL_FILENAME
+        export BINARY_WHEEL_PATH=$(Build.BinariesDirectory)/drop/$WHEEL_FILENAME
         cp $WHEEL_PATH $BINARY_WHEEL_PATH
         echo "##vso[task.setvariable variable=WHEEL_PATH_GLOBAL]$BINARY_WHEEL_PATH"
       displayName: 'Build Python Wheel for Libs and publish'

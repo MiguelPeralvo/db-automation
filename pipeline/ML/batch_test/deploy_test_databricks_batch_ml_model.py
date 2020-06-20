@@ -11,6 +11,7 @@ from pyspark.sql.functions import col
 if 'spark' not in locals():
     spark = SparkSession.builder.appName('Test').getOrCreate()
 
+
 def download_file(data_uri, data_path):
     if os.path.exists(data_path):
         print("File {} already exists".format(data_path))
@@ -27,6 +28,7 @@ def download_wine_file(data_uri, home, data_path):
     print(f"Copying file to {final_path}")
     dbutils.fs.cp(f"/tmp/mlflow-wine-quality.csv", final_path)
     return final_path
+
 
 def main():
     parser = argparse.ArgumentParser(description="Deploy and test batch model")

@@ -47,11 +47,14 @@ stages:
 - stage: Build
   displayName: "CI/Build"
   condition: |
-    or
+    and
     (
-      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/release')
+      ne(variables['Build.SourceBranch'], 'refs/heads/adf_publish'),
+      ne(variables['Build.SourceBranch'], 'refs/heads/master'),
+      ne(variables['Build.SourceBranch'], 'refs/heads/release'),
+      not(startsWith(variables['Build.SourceBranch'], 'refs/heads/releases')),
+      not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
+      not(eq(variables['Build.SourceBranch'], 'refs/tags/production'))
     )
   jobs:
   - job: Build

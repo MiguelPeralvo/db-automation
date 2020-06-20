@@ -111,8 +111,16 @@ stages:
         export WHEEL_FILENAME=`basename $WHEEL_PATH`
         dbfs rm --recursive dbfs:/FileStore/Shared/db-automation/libraries/$WHEEL_FILENAME --profile AZDO
         dbfs cp --overwrite $WHEEL_PATH dbfs:/FileStore/Shared/db-automation/libraries/$WHEEL_FILENAME --profile AZDO
-      displayName: 'Build Python Wheel for Libs'
+        export BINARY_WHEEL_PATH = $(Build.BinariesDirectory)/drop/$WHEEL_FILENAME
+        cp $WHEEL_PATH $BINARY_WHEEL_PATH
+        echo "##vso[task.setvariable variable=WHEEL_PATH_GLOBAL]$BINARY_WHEEL_PATH"
+      displayName: 'Build Python Wheel for Libs and publish'
 
+    - task: PublishBuildArtifacts@1
+      inputs:
+          pathtoPublish: $WHEEL_PATH_GLOBAL
+          artifactName: drop
+      displayName: 'Publish Artifact: drop'
 
     - script: |
         if [ $(Build.SourceBranchName) != "release" ] && [ $(Build.Reason) = "IndividualCI" ]
@@ -173,6 +181,16 @@ stages:
           steps:
           - script: env | sort
             displayName: 'Environment / Context'
+
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              buildType: specific
+              project: '$(System.TeamProjectId)'
+              pipeline: 1
+              buildVersionToDownload: latestFromBranch
+              branchName: refs/heads/dev
+              artifactName: drop
 
           - task: UsePythonVersion@0
             displayName: 'Use Python 3.7'

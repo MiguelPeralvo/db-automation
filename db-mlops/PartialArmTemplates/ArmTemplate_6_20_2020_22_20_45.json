@@ -6,18 +6,6 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "db-mlops"
-		},
-		"db_mlops_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'db_mlops'"
-		},
-		"db_mlops_staging_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'db_mlops_staging'"
-		},
-		"AzureKeyVault_ADF_properties_typeProperties_baseUrl": {
-			"type": "string",
-			"defaultValue": "https://miguel-kv.vault.azure.net/"
 		}
 	},
 	"variables": {
@@ -117,57 +105,6 @@
 					}
 				],
 				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/db_mlops')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureKeyVault_ADF')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureKeyVault",
-				"typeProperties": {
-					"baseUrl": "[parameters('AzureKeyVault_ADF_properties_typeProperties_baseUrl')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/db_mlops')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-4072795347483377.17.azuredatabricks.net",
-					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('db_mlops_accessToken')]"
-					},
-					"existingClusterId": "0615-192530-lefty261"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/db_mlops_staging')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-4072795347483377.17.azuredatabricks.net",
-					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('db_mlops_staging_accessToken')]"
-					},
-					"existingClusterId": "0615-192530-lefty261"
-				}
 			},
 			"dependsOn": []
 		}

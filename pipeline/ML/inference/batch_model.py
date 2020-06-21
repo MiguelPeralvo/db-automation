@@ -46,7 +46,7 @@ def main():
     args = parser.parse_args()
     model_name = args.model_name
     home = args.root_path
-    stage = args.stage
+    stage = args.stage.replace(" ", "")
     db = args.db_name.replace("@", "_").replace(".", "_")
     ml_output_predictions_table = args.table_name
 

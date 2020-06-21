@@ -27,6 +27,7 @@ trigger:
 
   paths:
     include:
+      - resources/adf/pipeline/*
       - libraries/*
       - pipeline/*
       - cicd-scripts/*

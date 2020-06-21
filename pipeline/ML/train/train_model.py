@@ -99,7 +99,7 @@ def main():
             print("MLflow:")
             print(f"  run_id: {run.info.run_id}")
             print(f"  experiment_id: {run.info.experiment_id}")
-            print(f"  experiment_id: {run.info.artifact_uri}")
+            print(f"  artifact_uri: {run.info.artifact_uri}")
 
             # Fit the Scikit-learn ElasticNet model
             lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=42)

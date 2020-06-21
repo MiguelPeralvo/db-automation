@@ -41,7 +41,9 @@ def main():
     parser.add_argument(
         "-t", "--table_name", help="Output Table name", default="mlops_wine_quality_regression",
                         required=False)
-    # parser.add_argument("-p", "--phase", help="Phase", default="qa", required=True)
+    parser.add_argument(
+        "-p", "--model_path", help="Model's artifacts path",
+        default="/dbfs/FileStore/Shared/db-automation/mlflow/wine-model", required=True)
 
     args = parser.parse_args()
     model_name = args.model_name
@@ -49,12 +51,14 @@ def main():
     stage = args.stage.replace(" ", "")
     db = args.db_name.replace("@", "_").replace(".", "_")
     ml_output_predictions_table = args.table_name
+    model_path = args.model_path
 
     print(f"Model name: {model_name}")
     print(f"home: {home}")
     print(f"stage: {stage}")
     print(f"db: {db}")
     print(f"ml_output_predictions_table: {ml_output_predictions_table}")
+    print(f"model_path: {model_path}")
     print("batch_inference")
 
     temp_data_path = f"/dbfs/tmp/mlflow-wine-quality.csv"
@@ -63,26 +67,10 @@ def main():
     wine_df = spark.read.format("csv").option("header", "true").load(dbfs_wine_data_path).drop("quality").cache()
     wine_df = wine_df.select(*(col(column).cast("float").alias(column.replace(" ", "_")) for column in wine_df.columns))
     data_spark = wine_df
-
-    # Pointing to the right model registry
-    host = dbutils.secrets.get(scope = "azure-demo-mlflow", key = "mlflow_host_registry")
-    token = dbutils.secrets.get(scope="azure-demo-mlflow", key="mlflow_token_registry")
-    cli_profile_name = 'registry'
-    dbutils.fs.put("file:///root/.databrickscfg", "[%s]\nhost=%s\ntoken=%s" % (cli_profile_name, host, token),
-                   overwrite=True)
-
-    TRACKING_URI = "databricks://%s" % cli_profile_name
-    print(TRACKING_URI)
-    remote_client = MlflowClient(tracking_uri=TRACKING_URI)
-    mlflow.set_tracking_uri(TRACKING_URI)
-    artifact_path = 'model'
-
-    latest_model = remote_client.get_latest_versions(name=model_name, stages=[stage])
-    print(f"Latest Model: {latest_model}")
-    run_id = latest_model[0].run_id
-    artifact_uri = artifact_utils.get_artifact_uri(run_id)
+    model_artifact = 'model'
+    artifact_uri = model_path
     print(f"artifact_uri: {artifact_uri}")
-    model_uri = f"runs:/{latest_model[0].run_id}/{artifact_path}"
+    model_uri = f"{artifact_uri}/{model_artifact}"
     print(f"model_uri: {model_uri}")
     udf = pyfunc.spark_udf(spark, model_uri)
 
@@ -92,15 +80,12 @@ def main():
     spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
     spark.sql(f"DROP TABLE IF EXISTS {db}.{ml_output_predictions_table}")
     predictions.write.format("delta").mode("overwrite").saveAsTable(f"{db}.{ml_output_predictions_table}")
-
     output = json.dumps({
         "model_name": model_name,
         "model_uri": model_uri
     })
 
     print(output)
-
-
 
 
 if __name__ == '__main__':

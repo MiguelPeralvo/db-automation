@@ -271,7 +271,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json -pa "{\"environment\":\"--stage=staging\", \"model_path\":\"--model_path=dbfs:/FileStore/Shared/db-automation/mlflow/$(MODEL_NAME)\"}"
+                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json -pa "{\"environment\":\"--stage=staging\", \"model_path\":\"--model_path=/dbfs/FileStore/Shared/db-automation/mlflow/$(MODEL_NAME)\"}"
               useGlobalConfig: true
               timeoutInMinutes: 10
 

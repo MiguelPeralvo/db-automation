@@ -169,7 +169,7 @@
 				"parameters": {
 					"environment": {
 						"type": "string",
-						"defaultValue": "-s staging"
+						"defaultValue": "-s test"
 					}
 				},
 				"annotations": []

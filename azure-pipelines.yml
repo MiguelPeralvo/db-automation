@@ -254,6 +254,7 @@ stages:
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
               python $(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py --output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)
+              ls -latr /home/vsts/mlflow/$(MODEL_NAME)/artifacts
               dbfs cp --recursive --overwrite /home/vsts/mlflow/$(MODEL_NAME)/artifacts/ dbfs:/FileStore/Shared/db-automation/mlflow/$(MODEL_NAME)/model/ --profile AZDO
             displayName: 'Retrieve artifacts from the mlflow global (per org) model registry to use them in Databricks Staging'
 

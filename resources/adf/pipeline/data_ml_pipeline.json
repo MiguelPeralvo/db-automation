@@ -79,8 +79,11 @@
 				"typeProperties": {
 					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
 					"parameters": [
-						"-m mlops-wine-model -o -r dbfs:/FileStore/Shared/db-automation -t test_table",
-						"@pipeline().parameters.environment"
+						"--model_name=mlops-wine-model",
+						"@pipeline().parameters.environment",
+						"--root_path=dbfs:/FileStore/Shared/db-automation",
+						"--table_name=wine_output_table_1",
+						"@pipeline().parameters.model_path"
 					]
 				},
 				"linkedServiceName": {
@@ -92,7 +95,11 @@
 		"parameters": {
 			"environment": {
 				"type": "string",
-				"defaultValue": "-s test"
+				"defaultValue": "--stage=test"
+			},
+			"model_path": {
+				"type": "string",
+				"defaultValue": "--model_path=/dbfs/FileStore/Shared/db-automation/mlflow/mlops-wine-model"
 			}
 		},
 		"annotations": []

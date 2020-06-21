@@ -346,20 +346,17 @@ stages:
             displayName: 'Import ML Batch Inference script'
 
           - script: |
-              id
               echo $HOME
-              echo "[registry]" > $HOME/.databrickscfg
+              ls $(Build.Repository.LocalPath)/libraries/python/dbxdemo/
+              echo >> $HOME/.databrickscfg
+              echo "[registry]" >> $HOME/.databrickscfg
               echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
               echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-            displayName: 'Configure mlflow client connection to global mlflow global (per org) model registry'
-
-          - task: PythonScript@0
-            inputs:
-              scriptSource: 'filePath'
-              scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-              arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
+              python $(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py --output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)
+              ls -latr /home/vsts/mlflow/$(MODEL_NAME)/artifacts
+              dbfs cp --recursive --overwrite /home/vsts/mlflow/$(MODEL_NAME)/artifacts/ dbfs:/FileStore/Shared/db-automation/mlflow/$(MODEL_NAME)/model/ --profile AZDO
             displayName: 'Retrieve artifacts from the mlflow global (per org) model registry to use them in Databricks Production'
 
           - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2

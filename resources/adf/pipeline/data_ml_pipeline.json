@@ -90,6 +90,40 @@
 					"referenceName": "db_mlops",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "batch_inference_2",
+				"type": "DatabricksSparkPython",
+				"dependsOn": [
+					{
+						"activity": "feature_engineering",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pythonFile": "dbfs:/FileStore/Shared/db-automation/ML/batch_model.py",
+					"parameters": [
+						"--model_name=mlops-wine-model",
+						"@pipeline().parameters.environment",
+						"--root_path=dbfs:/FileStore/Shared/db-automation",
+						"--table_name=wine_output_table_2",
+						"@pipeline().parameters.model_path"
+					]
+				},
+				"linkedServiceName": {
+					"referenceName": "db_mlops",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {

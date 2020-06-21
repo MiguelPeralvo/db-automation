@@ -245,21 +245,16 @@ stages:
             displayName: 'Import ML Batch Inference script'
 
           - script: |
-              id
               echo $HOME
               echo "[registry]" > $HOME/.databrickscfg
               echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
               echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
               cat /home/vsts/.databrickscfg
               mkdir -p /home/vsts/mlflow/$(MODEL_NAME)/artifacts
-            displayName: 'Configure mlflow client connection to mlflow global (per org) model registry'
-
-          - task: PythonScript@0
-            inputs:
-              scriptSource: 'filePath'
-              scriptPath: '$(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py'
-              arguments: '--output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)'
+              python $(Build.Repository.LocalPath)/cicd-scripts/remote_registry_mlflow.py --output_local_path=/home/vsts/mlflow/$(MODEL_NAME)/artifacts --model $(MODEL_NAME)
+              dbfs cp --recursive --overwrite /home/vsts/mlflow/$(MODEL_NAME)/artifacts/ dbfs:/FileStore/Shared/db-automation/mlflow/$(MODEL_NAME)/model/ --profile AZDO
             displayName: 'Retrieve artifacts from the mlflow global (per org) model registry to use them in Databricks Staging'
+
 
           - task: liprec.vsts-publish-adf.deploy-adf-json.deploy-adf-json@2
             displayName: 'Deploy Data Pipeline to $(STAGING_ADF_NAME) ADF'
@@ -276,7 +271,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json -pa "{\"environment\":\"-s staging\"}"
+                python $(Build.Repository.LocalPath)/cicd-scripts/adf_pipeline_run.py -r $(RESOURCE_GROUP) -a $(STAGING_ADF_NAME) -p $(STAGING_ADF_PIPELINE_NAME) -o ./logs/json -pa "{\"environment\":\"--stage=staging\", \"model_path\":\"--model_path=dbfs:/FileStore/Shared/db-automation/mlflow/$(MODEL_NAME)\"}"
               useGlobalConfig: true
               timeoutInMinutes: 10
 

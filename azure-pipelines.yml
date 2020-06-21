@@ -186,15 +186,15 @@ stages:
           - script: env | sort
             displayName: 'Environment / Context'
 
-#          - task: DownloadBuildArtifacts@0
-#            displayName: 'Download Build Artifacts'
-#            inputs:
-#              buildType: specific
-#              project: '$(System.TeamProjectId)'
-#              pipeline: 1
-#              buildVersionToDownload: latestFromBranch
-#              branchName: '$(System.PullRequest.SourceBranch)'
-#              artifactName: drop
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              buildType: specific
+              project: '$(System.TeamProjectId)'
+              pipeline: 1
+              buildVersionToDownload: latestFromBranch
+              branchName: '$(System.PullRequest.SourceBranch)'
+              artifactName: drop
 
           - task: UsePythonVersion@0
             displayName: 'Use Python 3.7'
@@ -246,7 +246,9 @@ stages:
 
           - script: |
               echo $HOME
-              echo "[registry]" > $HOME/.databrickscfg
+              ls $(Build.Repository.LocalPath)/libraries/python/dbxdemo/
+              echo >> $HOME/.databrickscfg
+              echo "[registry]" >> $HOME/.databrickscfg
               echo "host=$(WORKSPACE_REGION_URL)" >> $HOME/.databrickscfg
               echo "token=$(DATABRICKS_TOKEN)" >> $HOME/.databrickscfg
               cat /home/vsts/.databrickscfg

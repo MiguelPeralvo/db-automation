@@ -3,6 +3,7 @@ from azure.common.credentials import get_azure_cli_credentials
 from azure.mgmt.datafactory import DataFactoryManagementClient
 from azure.mgmt.datafactory.models import *
 from datetime import datetime, timedelta
+import json
 import argparse
 import time
 
@@ -49,6 +50,9 @@ def main():
     adf_client = DataFactoryManagementClient(credentials, subscription_id)
 
     # Create a pipeline run
+    if parameters:
+        parameters = json.loads(parameters)
+
     run_response = adf_client.pipelines.create_run(resource_group, adf_name, adf_pipeline_name, parameters=parameters)
 
     # Monitor the pipeline run

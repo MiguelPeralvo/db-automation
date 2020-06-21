@@ -110,7 +110,8 @@
 								"--model_name=mlops-wine-model",
 								"@pipeline().parameters.environment",
 								"--root_path=dbfs:/FileStore/Shared/db-automation",
-								"--table_name=wine_output_table_1"
+								"--table_name=wine_output_table_1",
+								"@pipeline().parameters.model_path"
 							]
 						},
 						"linkedServiceName": {
@@ -123,6 +124,10 @@
 					"environment": {
 						"type": "string",
 						"defaultValue": "--stage=test"
+					},
+					"model_path": {
+						"type": "string",
+						"defaultValue": "--model_path=/dbfs/FileStore/Shared/db-automation/mlflow/mlops-wine-model"
 					}
 				},
 				"annotations": []

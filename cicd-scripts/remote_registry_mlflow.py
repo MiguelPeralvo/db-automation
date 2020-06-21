@@ -11,6 +11,7 @@ from mlflow.utils.rest_utils import http_request_safe
 from mlflow.utils.string_utils import strip_prefix
 from mlflow.exceptions import MlflowException
 from mlflow.tracking import artifact_utils
+from mlflow.tracking import MlflowClient
 
 
 def _get_dbfs_endpoint(artifact_uri, artifact_path):
@@ -64,11 +65,13 @@ def main():
     parser = argparse.ArgumentParser(description="Execute python scripts in Databricks")
     parser.add_argument("-o", "--output_local_path", help="Output path where the artifacts will be written", required=True)
     parser.add_argument("-m", "--model_name", help="Model Registry Name", required=True)
+    parser.add_argument("-s", "--stage", help="Stage", default="staging", required=False)
     args = parser.parse_args()
 
 
     model_name = args.model_name
     output_local_path = args.output_local_path
+    stage = args.stage
 
     cli_profile_name = "registry"
     # TODO: Document that we assume that the registry profile will be created in the local machine:
@@ -78,11 +81,11 @@ def main():
     TRACKING_URI = f"databricks://{cli_profile_name}"
     print(f"TRACKING_URI: {TRACKING_URI}")
     artifact_path = 'model'
-    from mlflow.tracking import MlflowClient
+
     remote_client = MlflowClient(tracking_uri=TRACKING_URI)
     mlflow.set_tracking_uri(TRACKING_URI)
     # client = mlflow.tracking.MlflowClient()
-    latest_model = remote_client.get_latest_versions(name=model_name, stages=["staging"])
+    latest_model = remote_client.get_latest_versions(name=model_name, stages=[stage])
     print(f"Latest Model: {latest_model}")
     run_id = latest_model[0].run_id
     artifact_uri = artifact_utils.get_artifact_uri(run_id)
@@ -101,7 +104,6 @@ def main():
     # copy_artifacts(artifact_uri, artifact_path)
     # from mlflow.tracking import MlflowClient
     # remote_client = MlflowClient(tracking_uri=TRACKING_URI)
-
 
 
 if __name__ == '__main__':

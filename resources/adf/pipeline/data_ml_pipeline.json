@@ -81,7 +81,7 @@
 					"parameters": [
 						"-m mlops-wine-model",
 						"@pipeline().parameters.environment",
-						"-r dbfs:/FileStore/Shared/db-automation",
+						"-r /FileStore/Shared/db-automation",
 						"-t wine_output_table_1"
 					]
 				},

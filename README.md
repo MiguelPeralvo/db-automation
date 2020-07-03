@@ -1,6 +1,8 @@
 [![Build Status](https://dev.azure.com/db-automation/automation/_apis/build/status/MiguelPeralvo.db-automation?branchName=release)](https://dev.azure.com/db-automation/automation/_build/latest?definitionId=2&branchName=release)
 
-# Introduction 
+# MLOps with Azure Devops and ADF
+
+## Introduction 
 
 This project demonstrates the use of MLflow, Azure DevOps and Azure Data Factory as tools to work with ML Pipelines in Azure Databricks.
 
@@ -26,3 +28,53 @@ Workflow Steps:
     - Deploys other artifacts
     - Deploys the Azure Data Factory latest pipeline definition file into ADF Production
 
+
+## Project Structure
+
+Project Organization of relevant files
+------------
+```bash
+├── README.md
+├── azure-pipelines.yml
+├── cicd-scripts
+│   ├── adf_pipeline_run.py
+│   ├── execute_script.py
+│   ├── executenotebook.py
+│   └── remote_registry_mlflow.py
+├── libraries
+│   └── python
+│       └── dbxdemo
+│           ├── README.md
+│           ├── dbxdemo
+│           │   ├── __init__.py
+│           │   ├── appendcol.py
+│           │   └── spark.py
+│           ├── requirements.txt
+│           ├── setup.py
+│           └── test_appendcol.py
+|
+├── pipeline
+│   ├── ETL
+│   │   └── lib_use
+│   │       └── files.py
+│   └── ML
+│       ├── batch_test
+│       │   └── deploy_test_databricks_batch_ml_model.py
+│       ├── deploy
+│       │   └── deploy_azure_ml_model.py
+│       ├── feature_engineering
+│       │   └── fe_pre_model.py
+│       ├── inference
+│       │   └── batch_model.py
+│       ├── test
+│       │   └── test_api.py
+│       └── train
+│           └── train_model.py
+├── requirements.txt
+├── resources
+    ├── adf
+        ├── pipeline
+            └── data_ml_pipeline.json
+
+```
+--------

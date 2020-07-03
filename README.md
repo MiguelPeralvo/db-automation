@@ -29,9 +29,8 @@ Workflow Steps:
     - Deploys the Azure Data Factory latest pipeline definition file into ADF Production
 
 
-## Project Structure
+## Project Structure of relevant files
 
-Project Organization of relevant files
 ------------
 ```bash
 ├── README.md

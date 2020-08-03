@@ -72,7 +72,7 @@ stages:
         versionSpec: 3.8
 
     - script: |
-        pip install pytest requests setuptools wheel pyspark==2.4.6
+        pip install pytest requests setuptools wheel pyspark==3.0.0
     #    pip install -U databricks-cli
       displayName: 'Load Python Dependencies'
 

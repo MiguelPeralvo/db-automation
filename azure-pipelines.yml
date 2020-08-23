@@ -10,7 +10,7 @@ schedules:
   displayName: Daily midnight build
   branches:
     include:
-      - master
+      - release
 
 trigger:
   branches:
@@ -50,12 +50,12 @@ stages:
       displayName: 'Environment / Context'
 
     - task: UsePythonVersion@0
-      displayName: 'Use Python 3.7'
+      displayName: 'Use Python 3.8'
       inputs:
-        versionSpec: 3.7
+        versionSpec: 3.8
 
     - script: |
-        pip install pytest requests setuptools wheel pyspark==2.4.5
+        pip install pytest requests setuptools wheel pyspark==3.0.0
     #    pip install -U databricks-cli
       displayName: 'Load Python Dependencies'
 
@@ -260,9 +260,9 @@ stages:
             displayName: 'Environment / Context'
 
           - task: UsePythonVersion@0
-            displayName: 'Use Python 3.7'
+            displayName: 'Use Python 3.8'
             inputs:
-              versionSpec: 3.7
+              versionSpec: 3.8
 
           - script: |
               echo "production"

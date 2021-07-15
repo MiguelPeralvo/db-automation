@@ -158,6 +158,32 @@
 					"referenceName": "db_mlops",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "ETL1_copy1",
+				"type": "DatabricksSparkPython",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pythonFile": "dbfs:/Workspaces/Repos/miguel.peralvo@databricks.com/dbx-demos/consumption/metso-sizing-py",
+					"parameters": [],
+					"libraries": [
+						{
+							"whl": "dbfs:/FileStore/Shared/db-automation/libraries/dbxdemo-0.0.15-py3-none-any.whl"
+						}
+					]
+				},
+				"linkedServiceName": {
+					"referenceName": "db_mlops",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {

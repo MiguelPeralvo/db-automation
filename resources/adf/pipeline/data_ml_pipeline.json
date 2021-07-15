@@ -172,7 +172,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"pythonFile": "dbfs:/Workspaces/Repos/miguel.peralvo@databricks.com/dbx-demos/consumption/metso-sizing-py",
+					"pythonFile": "dbfs:/Workspace/Repos/miguel.peralvo@databricks.com/dbx-demos/consumption/metso-sizing-py",
 					"parameters": [],
 					"libraries": [
 						{
